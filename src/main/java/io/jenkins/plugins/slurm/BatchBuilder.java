@@ -1,22 +1,26 @@
 package io.jenkins.plugins.slurm;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Node;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import java.io.IOException;
 import java.lang.StringBuffer;
 import java.util.Scanner;
+import jenkins.tasks.SimpleBuildStep;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class BatchBuilder extends Builder {
+public class BatchBuilder extends Builder implements SimpleBuildStep {
     //raw script input
     private String rawScript;
     //number of nodes
@@ -94,9 +98,8 @@ public class BatchBuilder extends Builder {
         return errFileName;
     }
     
-    @Override
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher,
-            BuildListener listener) throws InterruptedException,IOException {
+    public void perform(Run<?,?> run, FilePath workspace, Launcher launcher,
+            TaskListener listener) throws InterruptedException,IOException {
         listener.getLogger().println("Testing 123");
         Computer computer=Computer.currentComputer();
         Node node=computer.getNode();
@@ -107,17 +110,19 @@ public class BatchBuilder extends Builder {
         }
         if (!(computer instanceof SLURMSlaveComputer)) { //TODO - generalise to BatchSlaveComputer
             listener.getLogger().println("ERROR: Computer is not a SLURM Slave");
-            return false;
+            //return false;
         }
         SLURMSlave slave = (SLURMSlave)node; //TODO - generalise by node type
         String prefix=slave.getPrefix(); 
         String filteredScript=filterScript(rawScript,prefix);
         if (filteredScript.trim().length()==0) {
             listener.getLogger().println("ERROR: Script has no valid content");
-            return false;
+            //return false;
         }
-        if (!isConfigurationValid(slave,listener)) 
-            return false;
+        if (!isConfigurationValid(slave,listener)) {
+            listener.getLogger().println("ERROR: Configuration is invalid");
+            //return false;
+        }
         //generate batch script
         String formattedBatchOptions = slave.formatBatchOptions( //TODO - any way to get this call to the SLURMSlave class rather than going through the node instance w/o losing generality?
             nodes, processesPerNode, walltime, queue, exclusive, 
@@ -128,7 +133,7 @@ public class BatchBuilder extends Builder {
                            + "#End of automatically generated script\n";
         listener.getLogger().print(finalScript);
         
-        return true;
+        //return true;
     }
     
     public String filterScript(String script, String prefix) {
@@ -150,7 +155,7 @@ public class BatchBuilder extends Builder {
         return filteredScript;
     }
     
-    public boolean isConfigurationValid(SLURMSlave node, BuildListener listener) {
+    public boolean isConfigurationValid(SLURMSlave node, TaskListener listener) {
         ResourceConfig config=node.getResourceConfig();
         if (nodes<1 || nodes>config.getMaxNodesPerJob()) {
             listener.getLogger().println("ERROR: 'Nodes' selection exceeds acceptable range (1-"+config.getMaxNodesPerJob()+")");
@@ -193,6 +198,7 @@ public class BatchBuilder extends Builder {
         return (DescriptorImpl) super.getDescriptor();
     }
     
+    @Symbol("submitJob")
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
         @Override
