@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:entry title="On start" field="notifyStart">
+        <f:checkbox/>
+    </f:entry>
+    <f:entry title="On end" field="notifyEnd">
+        <f:checkbox/>
+    </f:entry>
+    <f:entry title="On abort" field="notifyAbort">
+        <f:checkbox/>
+    </f:entry>       
+    <f:entry title="Email addresses to notify" field="notificationMailingList">
+        <f:textbox/>
+    </f:entry>
+</j:jelly>

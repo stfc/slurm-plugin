@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:entry title="Script" field="rawScript">
+        <f:textarea/>
+    </f:entry>
+    <f:entry title="Nodes" field="nodes">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="Processes per node" field="processesPerNode">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="Walltime required (minutes)" field="walltime">
+        <f:textbox/>
+    </f:entry>
+    <f:advanced>
+        <f:entry title="Queue" field="queue">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="Exclusive mode" field="exclusive">
+            <f:checkbox/>
+        </f:entry>
+        <f:optionalProperty title="Email notifications" field="notificationConfig"/>
+        <f:entry title="Output log name" field="outFileName">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="Error log name" field="errFileName">
+            <f:textbox/>
+        </f:entry>
+    </f:advanced>
+</j:jelly>
