@@ -68,25 +68,18 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     //TODO - these are basically untestable because I can't manually launch a SLURMSlave. Test in Jenkins somehow
     @Test
-    public void verifyBatchOptions_ReturnsFalseOnTooManyNodes() {
-        
-    }
     public void verifyBatchOptions_ReturnsFalseOnTooFewNodes() {
-        
-    }
-    public void verifyBatchOptions_ReturnsFalseOnTooManyProcessesPerNode() {
         
     }
     public void verifyBatchOptions_ReturnsFalseOnTooFewProcessesPerNode() {
         
     }
-    public void verifyBatchOptions_ReturnsFalseOnTooMuchWalltime() {
-        
-    }
     public void verifyBatchOptions_ReturnsFalseOnTooLittleWalltime() {
         
     }
-    
+    public void verifyBatchOptions_ReturnsFalseOnInvalidNotificationConfig() {
+        
+    }
     
     
 }

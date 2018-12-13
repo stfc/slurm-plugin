@@ -64,7 +64,8 @@ public class SLURMSlave extends Slave {
         buffer.append(prefix+" -N "+nodes+"\n");
         buffer.append(prefix+" -n "+processesPerNode+"\n");
         buffer.append(prefix+" -t "+walltime+"\n");
-        buffer.append(prefix+" -C "+queue+"\n");
+        if (queue!=null && queue.length()>0)
+            buffer.append(prefix+" -C "+queue+"\n");
         if (exclusive)
             buffer.append(prefix+" --exclusive \n");
         if (outFileName!=null && outFileName.length()>0)
