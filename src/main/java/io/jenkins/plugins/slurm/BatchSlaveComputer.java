@@ -11,16 +11,17 @@ import java.util.logging.Logger;
 
 import org.jenkinsci.remoting.RoleChecker;
 
-public class SLURMSlaveComputer extends BatchSlaveComputer {
-    protected static final Logger LOGGER=Logger.getLogger(SLURMSlaveComputer.class.getName());
+public class BatchSlaveComputer extends SlaveComputer {
+    //implementation currently redundant, but may later be useful
+    protected static final Logger LOGGER=Logger.getLogger(BatchSlaveComputer.class.getName());
     
-    public SLURMSlaveComputer(SLURMSlave slave) {
+    public BatchSlaveComputer(BatchSlave slave) {
         super(slave);
     }
     
     @Override
-    public SLURMSlave getNode() {
-        return (SLURMSlave)super.getNode();
+    public BatchSlave getNode() {
+        return (BatchSlave)super.getNode();
     }
     
 }

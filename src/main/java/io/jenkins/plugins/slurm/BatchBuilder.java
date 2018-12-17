@@ -226,14 +226,14 @@ public class BatchBuilder extends Builder implements SimpleBuildStep {
             if (value >= 1) 
                 return FormValidation.ok();
             else
-                return FormValidation.error("Positive integer required");
+                return FormValidation.error(Messages.errors_NotPositiveInteger());
         }
         
         public FormValidation doCheckProcessesPerNode(@QueryParameter int value) {
             if (value >= 1) 
                 return FormValidation.ok();
             else
-                return FormValidation.error("Positive integer required");
+                return FormValidation.error(Messages.errors_NotPositiveInteger());
         }
         
         
@@ -241,7 +241,7 @@ public class BatchBuilder extends Builder implements SimpleBuildStep {
             if (value >= 1) 
                 return FormValidation.ok();
             else
-                return FormValidation.error("Positive integer required");
+                return FormValidation.error(Messages.errors_NotPositiveInteger());
         }       
     }
 }

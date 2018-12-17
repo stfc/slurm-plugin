@@ -15,10 +15,9 @@ import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class SLURMSlave extends Slave {
-    private static final Logger LOGGER=Logger.getLogger(SLURMSlave.class.getName());
+public class SLURMSlave extends BatchSlave {
+    private static final Logger LOGGER = Logger.getLogger(SLURMSlave.class.getName());
     private static final String prefix = "#SBATCH";
-    private ResourceConfig resourceConfig;
     
     @DataBoundConstructor
     public SLURMSlave(String name, String nodeDescription, String remoteFS, 
@@ -27,33 +26,17 @@ public class SLURMSlave extends Slave {
             List<? extends NodeProperty<?>> nodeProperties, 
             ResourceConfig resourceConfig) 
             throws Descriptor.FormException, IOException {
-        super(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, nodeProperties);
-        this.resourceConfig=resourceConfig;
+        super(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, nodeProperties, resourceConfig);
+    }
+    
+    public static String getPrefix() {
+        return prefix;
     }
     
     @Override
     public Computer createComputer() {
         LOGGER.info("Creating a new SLURM Slave");
         return new SLURMSlaveComputer(this);
-    }
-    
-    public ResourceConfig getResourceConfig() {
-        return resourceConfig;
-    }
-    
-    public String getPrefix() {
-        return prefix;
-    }
-    
-    //terminate the slave
-    public void terminate() {
-        LOGGER.log(Level.INFO, "Terminating slave {0}", getNodeName());
-        try {
-            Jenkins.getInstance().removeNode(this);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to terminate LSF instance: "
-                    + getNodeName(), e);
-        }
     }
     
     public static String formatBatchOptions(int nodes, int processesPerNode,

@@ -60,30 +60,28 @@ public class ResourceConfig implements Describable<ResourceConfig>,Serializable 
         
         public FormValidation doCheckMaxNodesPerJob(@QueryParameter int value) {
             if (value <= 0)
-                return FormValidation.error("Positive integer required");
-            else if (value >= 50) //TODO - add limits based on hardware/our own limits
-                return FormValidation.error("Exceeds maximum nodes (50)");
+                return FormValidation.error(Messages.errors_NotPositiveInteger());
             else
                 return FormValidation.ok();
         }
         
         public FormValidation doCheckMaxProcessesPerNode(@QueryParameter int value) {
             if (value <= 0)
-                return FormValidation.error("Positive integer required");
+                return FormValidation.error(Messages.errors_NotPositiveInteger());
             else
                 return FormValidation.ok();
         }
         
         public FormValidation doCheckMaxWalltimePerJob(@QueryParameter int value) {
             if (value <= 0)
-                return FormValidation.error("Positive integer required");
+                return FormValidation.error(Messages.errors_NotPositiveInteger());
             else
                 return FormValidation.ok();
         }
         
         public FormValidation doCheckAvailableMinutes(@QueryParameter int value) {
             if (value <= 0)
-                return FormValidation.error("Positive integer required");
+                return FormValidation.error(Messages.errors_NotPositiveInteger());
             else
                 return FormValidation.ok();
         }
