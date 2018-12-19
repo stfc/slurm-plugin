@@ -1,9 +1,11 @@
 package io.jenkins.plugins.slurm;
 
+import com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
@@ -14,6 +16,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.StringBuffer;
 import java.util.Scanner;
 import jenkins.tasks.SimpleBuildStep;
@@ -138,7 +141,23 @@ public class BatchBuilder extends Builder implements SimpleBuildStep {
                            + filteredScript
                            + "#End of automatically generated script\n";
         listener.getLogger().print(finalScript);
+        String jobFileName="script";
+        PrintWriter writer = new PrintWriter("work/userContent/"+jobFileName,"UTF-8"); //I think this writes to the master
+        writer.print(finalScript); //may throw IOException
+        writer.close();
+        listener.getLogger().println("Remote: "+workspace.getRemote());
+        //stealing from LSF plugin - a usage of Copy to Slave plugin - don't install directly onto Jenkins as it has a major security flaw...        
+        //TODO - make this more secure for the master somehow?? Has anyone done this?????
+        CopyToSlaveBuildWrapper copyToSlave = new CopyToSlaveBuildWrapper(jobFileName,"", true, false,
+                                                    workspace.getRemote(),false);
+        if (run instanceof AbstractBuild && listener instanceof BuildListener)
+            copyToSlave.setUp(AbstractBuild.class.cast(run),launcher,BuildListener.class.cast(listener));
+        else
+            throw new AbortException("Cannot copy to slave"); //TODO - make this a user-friendly error
         
+        listener.getLogger().println("Script written");
+        BatchSystem batchSystem = new SLURMSystem(run,workspace,launcher,listener);
+        batchSystem.submitJob(jobFileName);
         //return true;
     }
     
