@@ -17,7 +17,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 public abstract class BatchSlave extends Slave {
     private static final Logger LOGGER = Logger.getLogger(BatchSlave.class.getName());
-    //subclasses must define logger and prefix
+    //subclasses must define/implement logger and prefix
     private ResourceConfig resourceConfig;
     
     public BatchSlave(String name, String nodeDescription, String remoteFS, 
@@ -33,9 +33,16 @@ public abstract class BatchSlave extends Slave {
     @Override
     public abstract Computer createComputer();
     
+    public abstract String formatBatchOptions(int nodes, int processesPerNode,
+            int walltime, String queue, boolean exclusive, 
+            NotificationConfig notificationConfig,
+            String outFileName, String errFileName);
+    
     public ResourceConfig getResourceConfig() {
         return resourceConfig;
     }
+    
+    public abstract String getPrefix();
     
     //terminate the slave
     public void terminate() {

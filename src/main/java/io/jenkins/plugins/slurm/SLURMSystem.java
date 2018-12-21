@@ -76,8 +76,10 @@ public class SLURMSystem extends BatchSystem {
     @Override
     public String submitJob(String jobFileName) throws InterruptedException, IOException {
         // submits the job to SLURM - method from LSF plugin
-        Shell shell = new Shell("#!/bin/bash +x\n" + "cd "+workspace.getRemote()+"\n" 
-                            + "ls");//+ "less " + jobFileName + " | tee comms.txt");
+        // TODO - resolve issue with sbatch submission from jenkins user
+        Shell shell = new Shell("#!/bin/bash +x\n" + "cd "+workspace.getRemote()+"\n"
+                            + "chmod 755 " + jobFileName +"\n"
+                            + "./"+/*"sbatch -W " +*/ jobFileName + " | tee comms.txt");
         shell.perform(build, launcher, blistener);
         
         return "Placeholder ID";
@@ -101,6 +103,7 @@ public class SLURMSystem extends BatchSystem {
     
     
                 // U N C H E C K E D C O N T E N T
+                // TODO - check all this content
 
     @Override
     public String getJobStatus(String jobId)

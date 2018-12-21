@@ -14,7 +14,7 @@ import org.junit.Test;
 public class BatchBuilderTest {//tests methods in BatchBuilder
     private static SLURMSlave slave; //generalise pls!!
 
-    /*
+    /* //this doesn't work. TODO - note in docs that this doesn't work
     @BeforeClass
     public static void launchSLURMSlave() throws FormException, IOException { //generalise?
         slave = new SLURMSlave("test","","/home/escg/jenkins/","1",Node.Mode.NORMAL,"test",
@@ -28,7 +28,7 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     @Test
     public void filterScript_ThrowsExceptionOnNullScript() {
         //generic non-failing constructor
-        BatchBuilder builder=new BatchBuilder("test", 1, 1, 1, "queue", false, 
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, "queue", false, 
             new NotificationConfig(true, true, true, "test@test.com"), "out.o", "err.e");
             
         boolean thrown=false;
@@ -47,7 +47,7 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     @Test
     public void filterScript_CorrectlyFiltersScriptWithInvalidLines() {
         //generic non-failing constructor
-        BatchBuilder builder=new BatchBuilder("test", 1, 1, 1, "queue", false, 
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, "queue", false, 
             new NotificationConfig(true, true, true, "test@test.com"), "out.o", "err.e");
             
         String script="start of script\n"
@@ -65,21 +65,5 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
         
         Assert.assertEquals(actualFilteredScript,expectedFilteredScript);
     }
-    
-    //TODO - these are basically untestable because I can't manually launch a SLURMSlave. Test in Jenkins somehow
-    @Test
-    public void verifyBatchOptions_ReturnsFalseOnTooFewNodes() {
-        
-    }
-    public void verifyBatchOptions_ReturnsFalseOnTooFewProcessesPerNode() {
-        
-    }
-    public void verifyBatchOptions_ReturnsFalseOnTooLittleWalltime() {
-        
-    }
-    public void verifyBatchOptions_ReturnsFalseOnInvalidNotificationConfig() {
-        
-    }
-    
     
 }

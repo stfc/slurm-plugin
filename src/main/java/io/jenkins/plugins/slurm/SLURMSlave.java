@@ -17,7 +17,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 public class SLURMSlave extends BatchSlave {
     private static final Logger LOGGER = Logger.getLogger(SLURMSlave.class.getName());
-    private static final String prefix = "#SBATCH";
+    private final String prefix = "#SBATCH";
     
     @DataBoundConstructor
     public SLURMSlave(String name, String nodeDescription, String remoteFS, 
@@ -29,7 +29,7 @@ public class SLURMSlave extends BatchSlave {
         super(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, nodeProperties, resourceConfig);
     }
     
-    public static String getPrefix() {
+    public String getPrefix() {
         return prefix;
     }
     
@@ -39,7 +39,8 @@ public class SLURMSlave extends BatchSlave {
         return new SLURMSlaveComputer(this);
     }
     
-    public static String formatBatchOptions(int nodes, int processesPerNode,
+    //ideally would be static, but isn't due to general BatchSlave calls in BatchBuilder.generateScript
+    public String formatBatchOptions(int nodes, int processesPerNode,
             int walltime, String queue, boolean exclusive, 
             NotificationConfig notificationConfig,
             String outFileName, String errFileName) {
@@ -47,6 +48,7 @@ public class SLURMSlave extends BatchSlave {
         buffer.append(prefix+" -N "+nodes+"\n");
         buffer.append(prefix+" -n "+processesPerNode+"\n");
         buffer.append(prefix+" -t "+walltime+"\n");
+        buffer.append(prefix+" -p scarf\n");
         if (queue!=null && queue.length()>0)
             buffer.append(prefix+" -C "+queue+"\n");
         if (exclusive)
