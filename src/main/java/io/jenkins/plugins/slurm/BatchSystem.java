@@ -73,7 +73,6 @@ public abstract class BatchSystem {
         this.communicationFile = "comms.txt";
         this.masterWorkingDirectory = run.getRootDir().getAbsolutePath();
         this.remoteWorkingDirectory = workspace.getRemote();
-        //tidy up all this mess pls
         
         //this.masterWorkingDirectory = masterWorkingDirectory;
     }
@@ -82,7 +81,12 @@ public abstract class BatchSystem {
     //submits the the job to the batch system
     public abstract boolean submitJob(String jobFileName) throws InterruptedException, IOException;
 
-            
+    /*
+     * cleans up the files created by the batch system
+     * @param jobId
+     * @throws InterruptedException 
+     */
+    public abstract void cleanUpFiles() throws InterruptedException;
             
             
             

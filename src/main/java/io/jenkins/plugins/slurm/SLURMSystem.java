@@ -118,6 +118,14 @@ public class SLURMSystem extends BatchSystem {
         */
     }
     
+    @Override
+    public void cleanUpFiles() throws InterruptedException {
+        listener.getLogger().println("Cleaning up workspace");
+        Shell shell = new Shell("#!/bin/bash +x\n" + "cd "+remoteWorkingDirectory+"\n"
+                                + "rm -rf ./*");
+        shell.perform(build, launcher, blistener);
+    }
+    
     
     
     

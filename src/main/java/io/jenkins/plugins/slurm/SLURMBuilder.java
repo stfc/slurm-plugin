@@ -73,6 +73,7 @@ public class SLURMBuilder extends BatchBuilder {
         String recoveryDestination=run.getRootDir().getAbsolutePath();
         listener.getLogger().println("Recovery destination: "+recoveryDestination);
         recoverFiles(filesToRecoverString,recoveryDestination,run,workspace,launcher,listener);
+        batchSystem.cleanUpFiles();
         if (!result) {
             throw new AbortException("SLURM job did not complete successfully");
         }
