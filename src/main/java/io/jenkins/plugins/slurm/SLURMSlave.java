@@ -40,17 +40,19 @@ public class SLURMSlave extends BatchSlave {
     }
     
     //ideally would be static, but isn't due to general BatchSlave calls in BatchBuilder.generateScript
-    public String formatBatchOptions(int nodes, int processesPerNode,
+    public String formatBatchOptions(int nodes, int tasks, int cpusPerTask,
             int walltime, String queue, boolean exclusive, 
             NotificationConfig notificationConfig,
             String outFileName, String errFileName) {
         StringBuffer buffer = new StringBuffer(); 
         buffer.append(prefix+" -N "+nodes+"\n");
-        buffer.append(prefix+" -n "+processesPerNode+"\n");
+        buffer.append(prefix+" -n "+tasks+"\n");
+        buffer.append(prefix+" -c "+cpusPerTask+"\n");
         buffer.append(prefix+" -t "+walltime+"\n");
-        buffer.append(prefix+" -p scarf\n");
+        buffer.append(prefix+" -C scarf18 #added by SLURM plugin\n");
+        buffer.append(prefix+" -W #added by SLURM plugin\n");
         if (queue!=null && queue.length()>0)
-            buffer.append(prefix+" -C "+queue+"\n");
+            buffer.append(prefix+" -p "+queue+"\n");
         if (exclusive)
             buffer.append(prefix+" --exclusive \n");
         if (outFileName!=null && outFileName.length()>0)

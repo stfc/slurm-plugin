@@ -8,7 +8,10 @@
     <f:entry title="Nodes" field="nodes">
         <f:textbox/>
     </f:entry>
-    <f:entry title="Processes per node" field="processesPerNode">
+    <f:entry title="Number of tasks" field="tasks">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="CPUs per task" field="cpusPerTask">
         <f:textbox/>
     </f:entry>
     <f:entry title="Walltime required (minutes)" field="walltime">

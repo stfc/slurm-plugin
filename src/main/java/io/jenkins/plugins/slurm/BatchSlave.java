@@ -33,7 +33,7 @@ public abstract class BatchSlave extends Slave {
     @Override
     public abstract Computer createComputer();
     
-    public abstract String formatBatchOptions(int nodes, int processesPerNode,
+    public abstract String formatBatchOptions(int nodes, int tasks, int cpusPerTask,
             int walltime, String queue, boolean exclusive, 
             NotificationConfig notificationConfig,
             String outFileName, String errFileName);

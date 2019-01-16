@@ -45,9 +45,10 @@ public abstract class BatchSystem {
     protected final Launcher launcher;
     protected final TaskListener listener;
     // every file created by the batch system should have this name
-    //protected final String COMMUNICATION_FILE;
+    protected final String communicationFile;
     //protected final CopyToMasterNotifier copyFileToMaster;
-    //protected final String masterWorkingDirectory;
+    protected final String masterWorkingDirectory;
+    protected final String remoteWorkingDirectory;
 
     // new LSF(build, launcher,
             //    listener, COMMUNICATION_FILE, masterWorkingDirectory);
@@ -69,6 +70,9 @@ public abstract class BatchSystem {
             this.blistener=BuildListener.class.cast(listener);
         else
             this.blistener=null;
+        this.communicationFile = "comms.txt";
+        this.masterWorkingDirectory = run.getRootDir().getAbsolutePath();
+        this.remoteWorkingDirectory = workspace.getRemote();
         //tidy up all this mess pls
         
         //this.masterWorkingDirectory = masterWorkingDirectory;
@@ -76,7 +80,7 @@ public abstract class BatchSystem {
 
     
     //submits the the job to the batch system
-    public abstract String submitJob(String jobFileName) throws InterruptedException, IOException;
+    public abstract boolean submitJob(String jobFileName) throws InterruptedException, IOException;
 
             
             

@@ -23,6 +23,7 @@
  */
 package io.jenkins.plugins.slurm;
 
+import com.michelin.cio.hudson.plugins.copytoslave.CopyToMasterNotifier;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -33,7 +34,7 @@ import hudson.model.TaskListener;
 import hudson.tasks.Shell;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -73,16 +74,37 @@ public class SLURMSystem extends BatchSystem {
         super(run, workspace, launcher, listener); //, COMMUNICATION_FILE, masterWorkingDirectory
     }
 
+    //submit job to SLURM
+    //should return true/false according to result of Shell.perform
     @Override
-    public String submitJob(String jobFileName) throws InterruptedException, IOException {
+    public boolean submitJob(String jobFileName) throws InterruptedException, IOException {
         // submits the job to SLURM - method from LSF plugin
-        // TODO - resolve issue with sbatch submission from jenkins user
-        Shell shell = new Shell("#!/bin/bash +x\n" + "cd "+workspace.getRemote()+"\n"
+        Shell shell = new Shell("#!/bin/bash +x\n" + "cd "+remoteWorkingDirectory+"\n"
                             + "chmod 755 " + jobFileName +"\n"
-                            + "./"+/*"sbatch -W " +*/ jobFileName + " | tee comms.txt");
+                            + "sbatch " + jobFileName /*+ " | tee "+communicationFile*/+"\n"
+                            + "echo $? > "+communicationFile);
         shell.perform(build, launcher, blistener);
         
-        return "Placeholder ID";
+        //get exit code by retrieving communicationFile
+        CopyToMasterNotifier copyFileToMaster = new CopyToMasterNotifier(communicationFile,"",true,masterWorkingDirectory,true);
+        BuildListenerAdapter fakeListener = new BuildListenerAdapter(TaskListener.NULL);
+        copyFileToMaster.perform(build,launcher,fakeListener);
+        BufferedReader fileReader = new BufferedReader(new InputStreamReader(
+                new FileInputStream(masterWorkingDirectory + "/" + communicationFile),"utf-8"));
+        String currentLine;
+        String lastLine="";
+        while ((currentLine=fileReader.readLine()) != null) {
+            lastLine=currentLine;
+        }
+        fileReader.close();
+        int exitCode;
+        try {
+            exitCode = Integer.parseInt(lastLine);       
+        }
+        catch (NumberFormatException e) {
+            throw new AbortException(e.getMessage());
+        }
+        return exitCode == 0;
         
         /*
         // stores the job id

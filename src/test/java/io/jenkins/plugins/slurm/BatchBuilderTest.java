@@ -28,7 +28,7 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     @Test
     public void filterScript_ThrowsExceptionOnNullScript() {
         //generic non-failing constructor
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, "queue", false, 
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", false, 
             new NotificationConfig(true, true, true, "test@test.com"), "out.o", "err.e");
             
         boolean thrown=false;
@@ -47,7 +47,7 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     @Test
     public void filterScript_CorrectlyFiltersScriptWithInvalidLines() {
         //generic non-failing constructor
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, "queue", false, 
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", false, 
             new NotificationConfig(true, true, true, "test@test.com"), "out.o", "err.e");
             
         String script="start of script\n"

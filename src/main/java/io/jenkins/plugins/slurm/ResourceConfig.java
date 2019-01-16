@@ -10,16 +10,16 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 public class ResourceConfig implements Describable<ResourceConfig>,Serializable {
     private int maxNodesPerJob;
-    private int maxProcessesPerNode;
+    private int cpusPerNode;
     private int maxWalltimePerJob;
     private int availableMinutes;
     private String availableQueues;
 
     @DataBoundConstructor
-    public ResourceConfig(int maxNodesPerJob, int maxProcessesPerNode, 
+    public ResourceConfig(int maxNodesPerJob, int cpusPerNode, 
         int maxWalltimePerJob, int availableMinutes, String availableQueues) {
         this.maxNodesPerJob=maxNodesPerJob;
-        this.maxProcessesPerNode=maxProcessesPerNode;
+        this.cpusPerNode=cpusPerNode;
         this.maxWalltimePerJob=maxWalltimePerJob;
         this.availableMinutes=availableMinutes;
         this.availableQueues=availableQueues;
@@ -29,8 +29,8 @@ public class ResourceConfig implements Describable<ResourceConfig>,Serializable 
         return maxNodesPerJob;
     }
     
-    public int getMaxProcessesPerNode() {
-        return maxProcessesPerNode;
+    public int getCpusPerNode() {
+        return cpusPerNode;
     }
     
     public int getMaxWalltimePerJob() {
@@ -65,7 +65,7 @@ public class ResourceConfig implements Describable<ResourceConfig>,Serializable 
                 return FormValidation.ok();
         }
         
-        public FormValidation doCheckMaxProcessesPerNode(@QueryParameter int value) {
+        public FormValidation doCheckCpusPerNode(@QueryParameter int value) {
             if (value <= 0)
                 return FormValidation.error(Messages.errors_NotPositiveInteger());
             else
