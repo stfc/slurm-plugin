@@ -5,22 +5,24 @@ import hudson.model.Descriptor;
 import hudson.model.Describable;
 import hudson.util.FormValidation;
 import java.io.Serializable;
+import java.lang.Math;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class ResourceConfig implements Describable<ResourceConfig>,Serializable {
     private int maxNodesPerJob;
     private int cpusPerNode;
-    private int maxWalltimePerJob;
+    private int maxCpuTimePerJob;
     private int availableMinutes;
+    private int availableSeconds;
     private String availableQueues;
 
     @DataBoundConstructor
     public ResourceConfig(int maxNodesPerJob, int cpusPerNode, 
-        int maxWalltimePerJob, int availableMinutes, String availableQueues) {
+        int maxCpuTimePerJob, int availableMinutes, String availableQueues) {
         this.maxNodesPerJob=maxNodesPerJob;
         this.cpusPerNode=cpusPerNode;
-        this.maxWalltimePerJob=maxWalltimePerJob;
+        this.maxCpuTimePerJob=maxCpuTimePerJob;
         this.availableMinutes=availableMinutes;
         this.availableQueues=availableQueues;
     }
@@ -33,8 +35,8 @@ public class ResourceConfig implements Describable<ResourceConfig>,Serializable 
         return cpusPerNode;
     }
     
-    public int getMaxWalltimePerJob() {
-        return maxWalltimePerJob;
+    public int getMaxCpuTimePerJob() {
+        return maxCpuTimePerJob;
     }
     
     public int getAvailableMinutes() {
@@ -48,6 +50,20 @@ public class ResourceConfig implements Describable<ResourceConfig>,Serializable 
     @Override
     public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
+    }
+    
+    //availableMinutes can be updated without updating availableSeconds. If config is saved without changing availableMinutes, don't want availableSeconds to change.
+    //probably overly pedantic
+    public void verifyAvailableSeconds() {
+        if (availableSeconds < availableMinutes*60 || availableSeconds > availableMinutes*60+59) {
+            this.availableSeconds = availableMinutes*60; //availableMinutes has changed for some reason, so update accordingly
+        }
+    }
+    
+    public void reduceAvailableSeconds(int time) {
+        verifyAvailableSeconds();
+        this.availableSeconds -= time;
+        this.availableMinutes = (int)Math.floor((double)availableSeconds/60.); //always round down
     }
     
     @Extension
@@ -72,7 +88,7 @@ public class ResourceConfig implements Describable<ResourceConfig>,Serializable 
                 return FormValidation.ok();
         }
         
-        public FormValidation doCheckMaxWalltimePerJob(@QueryParameter int value) {
+        public FormValidation doCheckMaxCpuTimePerJob(@QueryParameter int value) {
             if (value <= 0)
                 return FormValidation.error(Messages.errors_NotPositiveInteger());
             else

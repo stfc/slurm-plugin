@@ -8,10 +8,10 @@
     <f:entry title="CPUs per node" field="cpusPerNode">
         <f:textbox/>
     </f:entry>
-    <f:entry title="Maximum walltime per job (minutes)" field="maxWalltimePerJob">
+    <f:entry title="Maximum CPU time per job (minutes)" field="maxCpuTimePerJob">
         <f:textbox/>
     </f:entry>       
-    <f:entry title="Total time available (minutes)" field="availableMinutes">
+    <f:entry title="Total CPU time available (minutes)" field="availableMinutes">
         <f:textbox/>
     Current available minutes: ${it.resourceConfig.availableMinutes}
     </f:entry>

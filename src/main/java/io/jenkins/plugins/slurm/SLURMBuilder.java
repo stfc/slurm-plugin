@@ -41,6 +41,8 @@ public class SLURMBuilder extends BatchBuilder {
     @Override
     public void perform(Run<?,?> run, FilePath workspace, Launcher launcher, 
             TaskListener listener) throws InterruptedException, IOException {
+        
+        //get computer and batch system set up and check all valid
         Computer computer = getComputer(workspace);
         Node node = getNode(computer);
         try { //TODO - remove this later, only a debug thing
@@ -52,15 +54,27 @@ public class SLURMBuilder extends BatchBuilder {
             throw new AbortException("Computer is not a SLURM node computer");
         }
         SLURMSlave slurmNode = (SLURMSlave) node;
-        String finalScript = generateScript(rawScript,slurmNode,listener);
-        listener.getLogger().print(finalScript);
-        String jobFileName = "script"; //TODO - figure out naming convention
-        writeScriptToFile(finalScript,jobFileName);
-        listener.getLogger().println("Remote: "+workspace.getRemote());
-        sendFileToRemote(jobFileName,run,workspace,launcher,listener);
-        listener.getLogger().println("Script sent to remote");
         BatchSystem batchSystem = new SLURMSystem(run,workspace,launcher,listener);
-        boolean result = batchSystem.submitJob(jobFileName); //TODO - make waitFor() clearer
+        
+        //generate scripts, write to file and copy to remote
+        String userScriptName="_user_script.sh";
+        String userScript = generateUserScript(rawScript,slurmNode,listener);
+        String systemScriptName="_system_script.sh";
+        String systemScript = generateSystemScript(slurmNode, userScriptName, batchSystem.getCommunicationFile(), listener);
+        listener.getLogger().print(systemScriptName+":\n"+systemScript);
+        listener.getLogger().print(userScriptName+":\n"+userScript);
+
+        writeScriptToFile(systemScript,systemScriptName);
+        writeScriptToFile(userScript,userScriptName);
+        listener.getLogger().println("Remote: "+workspace.getRemote());
+        sendFilesToRemote(systemScriptName+","+userScriptName,run,workspace,launcher,listener);
+        listener.getLogger().println("Scripts sent to remote");
+        
+        //run job and recover artifacts
+        int computeTimeSec = batchSystem.submitJob(systemScriptName); //TODO - make waitFor() clearer
+        if (computeTimeSec==-1) {
+            listener.error("SLURM job did not complete successfully. Files will be recovered before this job is aborted.");
+        }
         listener.getLogger().println("Recovering files from remote");
         ArrayList<String> filesToRecover = new ArrayList<String>();
         if (outFileName != null && outFileName.length()>0) {
@@ -69,12 +83,14 @@ public class SLURMBuilder extends BatchBuilder {
         if (errFileName != null && errFileName.length()>0) {
             filesToRecover.add(errFileName);
         }
+        filesToRecover.add(batchSystem.getCommunicationFile()); //TODO - remove this, purely for debug
         String filesToRecoverString = String.join(",",filesToRecover);
         String recoveryDestination=run.getRootDir().getAbsolutePath();
         listener.getLogger().println("Recovery destination: "+recoveryDestination);
         recoverFiles(filesToRecoverString,recoveryDestination,run,workspace,launcher,listener);
         batchSystem.cleanUpFiles();
-        if (!result) {
+        slurmNode.reduceAvailableSeconds(computeTimeSec);
+        if (computeTimeSec==-1) {
             throw new AbortException("SLURM job did not complete successfully");
         }
     }

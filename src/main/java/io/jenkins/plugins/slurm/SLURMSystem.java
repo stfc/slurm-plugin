@@ -41,7 +41,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+import java.lang.Math;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Scanner;
 import java.util.Set;
 import jenkins.util.BuildListenerAdapter;
 
@@ -77,34 +80,41 @@ public class SLURMSystem extends BatchSystem {
     //submit job to SLURM
     //should return true/false according to result of Shell.perform
     @Override
-    public boolean submitJob(String jobFileName) throws InterruptedException, IOException {
+    public int submitJob(String jobFileName) throws InterruptedException, IOException {
         // submits the job to SLURM - method from LSF plugin
-        Shell shell = new Shell("#!/bin/bash +x\n" + "cd "+remoteWorkingDirectory+"\n"
-                            + "chmod 755 " + jobFileName +"\n"
-                            + "sbatch " + jobFileName /*+ " | tee "+communicationFile*/+"\n"
-                            + "echo $? > "+communicationFile);
+        Shell shell = new Shell("#!/bin/bash +x\n" + "cd " + remoteWorkingDirectory + "\n"
+                            + "chmod 755 " + jobFileName + "\n"
+                            + "sbatch " + jobFileName + "\n");
+                            //+ "echo $? > "+communicationFile);
         shell.perform(build, launcher, blistener);
         
         //get exit code by retrieving communicationFile
         CopyToMasterNotifier copyFileToMaster = new CopyToMasterNotifier(communicationFile,"",true,masterWorkingDirectory,true);
         BuildListenerAdapter fakeListener = new BuildListenerAdapter(TaskListener.NULL);
         copyFileToMaster.perform(build,launcher,fakeListener);
-        BufferedReader fileReader = new BufferedReader(new InputStreamReader(
-                new FileInputStream(masterWorkingDirectory + "/" + communicationFile),"utf-8"));
-        String currentLine;
-        String lastLine="";
-        while ((currentLine=fileReader.readLine()) != null) {
-            lastLine=currentLine;
+        
+        File file = new File(masterWorkingDirectory+"/"+communicationFile);
+        Scanner scanner = new Scanner(file,"utf-8");
+        int exitCode = scanner.nextInt(); //first line of file should be exit code
+        float computeTimeSec = 0;
+        String line = scanner.nextLine(); //empty line before times //TODO - make this nicer...
+        while (scanner.hasNextLine()) {
+            line = scanner.nextLine();
+            String[] split = line.split("\\p{Alpha}\\s*");
+            float userTimeMin=Float.parseFloat(split[0]);
+            float userTimeSec=Float.parseFloat(split[1]);
+            float sysTimeMin=Float.parseFloat(split[2]);
+            float sysTimeSec=Float.parseFloat(split[3]);
+            listener.getLogger().println(userTimeMin+" "+userTimeSec+" "+sysTimeMin+" "+sysTimeSec);
+            computeTimeSec += userTimeMin*60 + userTimeSec + sysTimeMin*60 + sysTimeSec;
         }
-        fileReader.close();
-        int exitCode;
-        try {
-            exitCode = Integer.parseInt(lastLine);       
+        listener.getLogger().println("Total compute time: " + computeTimeSec + " seconds");
+        if (exitCode!=0 || computeTimeSec < 0) {
+            return -1; //failed job
+        }      
+        else {
+            return (int)Math.ceil(computeTimeSec);
         }
-        catch (NumberFormatException e) {
-            throw new AbortException(e.getMessage());
-        }
-        return exitCode == 0;
         
         /*
         // stores the job id

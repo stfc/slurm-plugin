@@ -73,13 +73,17 @@ public abstract class BatchSystem {
         this.communicationFile = "comms.txt";
         this.masterWorkingDirectory = run.getRootDir().getAbsolutePath();
         this.remoteWorkingDirectory = workspace.getRemote();
-        
-        //this.masterWorkingDirectory = masterWorkingDirectory;
+    }
+    
+    //TODO - ADD GETTERS!
+    
+    public String getCommunicationFile() {
+        return communicationFile;
     }
 
     
     //submits the the job to the batch system
-    public abstract boolean submitJob(String jobFileName) throws InterruptedException, IOException;
+    public abstract int submitJob(String jobFileName) throws InterruptedException, IOException;
 
     /*
      * cleans up the files created by the batch system

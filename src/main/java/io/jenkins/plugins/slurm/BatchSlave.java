@@ -55,5 +55,9 @@ public abstract class BatchSlave extends Slave {
         }
     }
     
+    public void reduceAvailableSeconds(int time) {
+        resourceConfig.reduceAvailableSeconds(time);
+    }
+    
     //subclasses must define formatBatchOptions function
 }
