@@ -59,7 +59,7 @@ public class SLURMSlave extends BatchSlave {
             buffer.append(prefix+" -o "+outFileName+"\n");
         if (errFileName!=null && errFileName.length()>0)
             buffer.append(prefix+" -e "+errFileName+"\n");
-        if (notificationConfig!=null) {
+        if (notificationConfig!=null) { //must be formatted by this class as NotificationConfig is not specific to any batch system
             if (notificationConfig.isNotifyStartTicked() 
                 || notificationConfig.isNotifyEndTicked() 
                 || notificationConfig.isNotifyAbortTicked()) {

@@ -49,12 +49,9 @@ public abstract class BatchSystem {
     //protected final CopyToMasterNotifier copyFileToMaster;
     protected final String masterWorkingDirectory;
     protected final String remoteWorkingDirectory;
-
-    // new LSF(build, launcher,
-            //    listener, COMMUNICATION_FILE, masterWorkingDirectory);
     
     public BatchSystem(Run<?, ?> run, FilePath workspace, Launcher launcher,
-            TaskListener listener) {//, String COMMUNICATION_FILE, String masterWorkingDirectory) 
+            TaskListener listener, String communicationFile) {//, String COMMUNICATION_FILE, String masterWorkingDirectory) 
         //this.COMMUNICATION_FILE = COMMUNICATION_FILE;
         //this.copyFileToMaster = new CopyToMasterNotifier(COMMUNICATION_FILE,
                // "", true, masterWorkingDirectory, true);
@@ -70,7 +67,7 @@ public abstract class BatchSystem {
             this.blistener=BuildListener.class.cast(listener);
         else
             this.blistener=null;
-        this.communicationFile = "comms.txt";
+        this.communicationFile = communicationFile;
         this.masterWorkingDirectory = run.getRootDir().getAbsolutePath();
         this.remoteWorkingDirectory = workspace.getRemote();
     }
@@ -83,7 +80,7 @@ public abstract class BatchSystem {
 
     
     //submits the the job to the batch system
-    public abstract int submitJob(String jobFileName) throws InterruptedException, IOException;
+    public abstract int[] submitJob(String jobFileName) throws InterruptedException, IOException;
 
     /*
      * cleans up the files created by the batch system

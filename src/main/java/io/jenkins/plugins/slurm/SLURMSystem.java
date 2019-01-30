@@ -73,21 +73,21 @@ public class SLURMSystem extends BatchSystem {
             = new BuildListenerAdapter(TaskListener.NULL);
 
     public SLURMSystem(Run<?, ?> run, FilePath workspace, Launcher launcher,
-            TaskListener listener) {//, String COMMUNICATION_FILE, String masterWorkingDirectory
-        super(run, workspace, launcher, listener); //, COMMUNICATION_FILE, masterWorkingDirectory
+            TaskListener listener, String communicationFile) {//, String COMMUNICATION_FILE, String masterWorkingDirectory
+        super(run, workspace, launcher, listener, communicationFile); //, COMMUNICATION_FILE, masterWorkingDirectory
     }
 
     //submit job to SLURM
     //should return true/false according to result of Shell.perform
     @Override
-    public int submitJob(String jobFileName) throws InterruptedException, IOException {
+    public int[] submitJob(String jobFileName) throws InterruptedException, IOException {
         // submits the job to SLURM - method from LSF plugin
         Shell shell = new Shell("#!/bin/bash +x\n" + "cd " + remoteWorkingDirectory + "\n"
                             + "chmod 755 " + jobFileName + "\n"
                             + "sbatch " + jobFileName + "\n");
-                            //+ "echo $? > "+communicationFile);
         shell.perform(build, launcher, blistener);
         
+        //TODO - make separate function for recovering info?
         //get exit code by retrieving communicationFile
         CopyToMasterNotifier copyFileToMaster = new CopyToMasterNotifier(communicationFile,"",true,masterWorkingDirectory,true);
         BuildListenerAdapter fakeListener = new BuildListenerAdapter(TaskListener.NULL);
@@ -97,7 +97,7 @@ public class SLURMSystem extends BatchSystem {
         Scanner scanner = new Scanner(file,"utf-8");
         int exitCode = scanner.nextInt(); //first line of file should be exit code
         float computeTimeSec = 0;
-        String line = scanner.nextLine(); //empty line before times //TODO - make this nicer...
+        String line = scanner.nextLine(); //empty line before `times` output //TODO - make this nicer...
         while (scanner.hasNextLine()) {
             line = scanner.nextLine();
             String[] split = line.split("\\p{Alpha}\\s*");
@@ -109,12 +109,8 @@ public class SLURMSystem extends BatchSystem {
             computeTimeSec += userTimeMin*60 + userTimeSec + sysTimeMin*60 + sysTimeSec;
         }
         listener.getLogger().println("Total compute time: " + computeTimeSec + " seconds");
-        if (exitCode!=0 || computeTimeSec < 0) {
-            return -1; //failed job
-        }      
-        else {
-            return (int)Math.ceil(computeTimeSec);
-        }
+        int[] output = {exitCode, (int)Math.ceil(computeTimeSec)};
+        return output;
         
         /*
         // stores the job id

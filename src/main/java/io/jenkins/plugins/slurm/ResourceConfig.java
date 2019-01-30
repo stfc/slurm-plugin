@@ -103,7 +103,7 @@ public class ResourceConfig implements Describable<ResourceConfig>,Serializable 
         }
         
         public FormValidation doCheckAvailableQueues(@QueryParameter String value) {
-            if (value.length()==0)
+            if (value.isEmpty())
                 return FormValidation.warning("No queues entered - queues specified in jobs running on this node will not be checked for validity");
             else
                 return FormValidation.ok();

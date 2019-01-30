@@ -30,6 +30,12 @@ public abstract class BatchSlave extends Slave {
         this.resourceConfig=resourceConfig;
     }
     
+    public ResourceConfig getResourceConfig() {
+        return resourceConfig;
+    }
+    
+    public abstract String getPrefix();
+    
     @Override
     public abstract Computer createComputer();
     
@@ -38,11 +44,7 @@ public abstract class BatchSlave extends Slave {
             NotificationConfig notificationConfig,
             String outFileName, String errFileName);
     
-    public ResourceConfig getResourceConfig() {
-        return resourceConfig;
-    }
     
-    public abstract String getPrefix();
     
     //terminate the slave
     public void terminate() {

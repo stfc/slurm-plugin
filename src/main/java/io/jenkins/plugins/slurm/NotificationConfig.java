@@ -41,7 +41,7 @@ public class NotificationConfig implements Describable<NotificationConfig> {
     
     public boolean isValid() {
         if (notifyStartTicked || notifyEndTicked || notifyAbortTicked) {
-            if (notificationMailingList==null || notificationMailingList.length()==0){
+            if (notificationMailingList==null || notificationMailingList.isEmpty()){
                 return false; //notifications selected but no mailing list entered
             }
         }
