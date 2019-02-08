@@ -80,14 +80,14 @@ public abstract class BatchSystem {
 
     
     //submits the the job to the batch system
-    public abstract int[] submitJob(String jobFileName) throws InterruptedException, IOException;
+    public abstract int[] submitJob(String jobFileName, int walltime) throws InterruptedException, IOException;
 
     /*
      * cleans up the files created by the batch system
      * @param jobId
      * @throws InterruptedException 
      */
-    public abstract void cleanUpFiles() throws InterruptedException;
+    public abstract void cleanUpFiles(String filesToClean) throws InterruptedException;
             
             
             

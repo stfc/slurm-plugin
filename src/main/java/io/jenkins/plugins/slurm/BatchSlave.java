@@ -41,8 +41,8 @@ public abstract class BatchSlave extends Slave {
     
     public abstract String formatBatchOptions(int nodes, int tasks, int cpusPerTask,
             int walltime, String queue, boolean exclusive, 
-            NotificationConfig notificationConfig,
-            String outFileName, String errFileName);
+            NotificationConfig notificationConfig);
+            //String outFileName, String errFileName);
     
     
     

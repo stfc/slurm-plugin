@@ -32,10 +32,10 @@ public class SLURMBuilder extends BatchBuilder {
     @DataBoundConstructor
     public SLURMBuilder(String rawScript, int nodes, int tasks, int cpusPerTask,
             int walltime, String queue, boolean exclusive, 
-            NotificationConfig notificationConfig,
-            String outFileName, String errFileName) {
+            NotificationConfig notificationConfig, String additionalFilesToRecover) {
+         //   String outFileName, String errFileName) {
         super(rawScript,nodes,tasks,cpusPerTask,walltime,queue,exclusive,
-                notificationConfig,outFileName,errFileName);
+                notificationConfig,additionalFilesToRecover);//,outFileName,errFileName);
     }
     
     @Override
@@ -60,7 +60,7 @@ public class SLURMBuilder extends BatchBuilder {
         BatchSystem batchSystem = new SLURMSystem(run,workspace,launcher,listener,communicationFile);
         String formattedBatchOptions = slurmNode.formatBatchOptions(
                 nodes, tasks, cpusPerTask, walltime, queue, exclusive, 
-                notificationConfig, outFileName, errFileName);
+                notificationConfig);//, outFileName, errFileName);
         
         //generate scripts, write to file and copy to remote
         String userScriptName="_user_script.sh";
@@ -77,27 +77,40 @@ public class SLURMBuilder extends BatchBuilder {
         listener.getLogger().println("Scripts sent to remote");
         
         //run job and recover artifacts
-        int[] output = batchSystem.submitJob(systemScriptName); //TODO - make waitFor() clearer
-        int exitCode = output[0];
-        int computeTimeSec = output[1];
+        int[] output = batchSystem.submitJob(systemScriptName,walltime); //TODO - make waitFor() clearer
+        int jobID = output[0];
+        int exitCode = output[1];
+        int computeTimeSec = output[2];
         slurmNode.reduceAvailableSeconds(computeTimeSec);
         if (exitCode != 0) {
             listener.error("SLURM job did not complete successfully. Files will be recovered before this job is aborted.");
         }
         listener.getLogger().println("Recovering files from remote");
         ArrayList<String> filesToRecover = new ArrayList<String>();
+        if (jobID>=0) {
+            filesToRecover.add("slurm-"+jobID+"*");
+        }
+        /*
         if (outFileName != null && outFileName.length()>0) {
             filesToRecover.add(outFileName);
         }
         if (errFileName != null && errFileName.length()>0) {
             filesToRecover.add(errFileName);
         }
+        */
+        filesToRecover.add("_sbatch_output.txt"); //TODO - remove this, purely for debug
         filesToRecover.add(batchSystem.getCommunicationFile()); //TODO - remove this, purely for debug
-        String filesToRecoverString = String.join(",",filesToRecover);
+        String filesToRecoverString;
+        if (additionalFilesToRecover != null && !additionalFilesToRecover.isEmpty()) {
+            filesToRecoverString = additionalFilesToRecover + "," + String.join(",",filesToRecover);
+        }
+        else {
+            filesToRecoverString = String.join(",",filesToRecover);
+        }
         String recoveryDestination=run.getRootDir().getAbsolutePath();
         listener.getLogger().println("Recovery destination: "+recoveryDestination);
         recoverFiles(filesToRecoverString,recoveryDestination,run,workspace,launcher,listener);
-        batchSystem.cleanUpFiles();
+        batchSystem.cleanUpFiles(filesToRecoverString);
         if (exitCode != 0) {
             throw new AbortException("SLURM job did not complete successfully");
         }

@@ -42,8 +42,8 @@ public class SLURMSlave extends BatchSlave {
     //ideally would be static, but isn't due to general BatchSlave calls in BatchBuilder.generateScript
     public String formatBatchOptions(int nodes, int tasks, int cpusPerTask,
             int walltime, String queue, boolean exclusive, 
-            NotificationConfig notificationConfig,
-            String outFileName, String errFileName) {
+            NotificationConfig notificationConfig) {
+            //String outFileName, String errFileName) {
         StringBuffer buffer = new StringBuffer(); 
         buffer.append(prefix+" -N "+nodes+"\n");
         buffer.append(prefix+" -n "+tasks+"\n");
@@ -55,10 +55,12 @@ public class SLURMSlave extends BatchSlave {
             buffer.append(prefix+" -p "+queue+"\n");
         if (exclusive)
             buffer.append(prefix+" --exclusive \n");
+        /*
         if (outFileName!=null && outFileName.length()>0)
             buffer.append(prefix+" -o "+outFileName+"\n");
         if (errFileName!=null && errFileName.length()>0)
             buffer.append(prefix+" -e "+errFileName+"\n");
+        */
         if (notificationConfig!=null) { //must be formatted by this class as NotificationConfig is not specific to any batch system
             if (notificationConfig.isNotifyStartTicked() 
                 || notificationConfig.isNotifyEndTicked() 

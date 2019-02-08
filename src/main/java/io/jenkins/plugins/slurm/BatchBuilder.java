@@ -44,10 +44,12 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     protected boolean exclusive;
     //email notification configuration
     protected NotificationConfig notificationConfig;
+    //files user wishes to recover
+    protected String additionalFilesToRecover;
     //stdout file name
-    protected String outFileName;
+    //protected String outFileName;
     //stderr file name
-    protected String errFileName;
+    //protected String errFileName;
     // file name for the communication between master and slave
     //private static final String COMMUNICATION_FILE = "output";
     // name of the file where the running job output is saved - potentially not necessary any more? idk must look at
@@ -57,8 +59,8 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     
     public BatchBuilder(String rawScript, int nodes, int tasks, int cpusPerTask,
             int walltime, String queue, boolean exclusive, 
-            NotificationConfig notificationConfig,
-            String outFileName, String errFileName) {
+            NotificationConfig notificationConfig, String additionalFilesToRecover) {
+            //String outFileName, String errFileName) {
         this.rawScript=rawScript;
         this.nodes=nodes;
         this.tasks=tasks;
@@ -67,8 +69,9 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
         this.queue=queue;
         this.exclusive=exclusive;
         this.notificationConfig=notificationConfig;
-        this.outFileName=outFileName;
-        this.errFileName=errFileName;
+        this.additionalFilesToRecover=additionalFilesToRecover;
+        //this.outFileName=outFileName;
+        //this.errFileName=errFileName;
     }
     
     public String getRawScript() {
@@ -103,6 +106,10 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
         return notificationConfig;
     }
     
+    public String getAdditionalFilesToRecover() {
+        return additionalFilesToRecover;
+    }
+    /*
     public String getOutFileName() {
         return outFileName;
     }
@@ -110,7 +117,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     public String getErrFileName() {
         return errFileName;
     }
-    
+    */
     public Computer getComputer(FilePath workspace) throws AbortException {
         Computer computer = workspace.toComputer();
         if (computer==null) {

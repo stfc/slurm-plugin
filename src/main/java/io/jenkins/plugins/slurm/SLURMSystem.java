@@ -35,6 +35,8 @@ import hudson.tasks.Shell;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -80,36 +82,70 @@ public class SLURMSystem extends BatchSystem {
     //submit job to SLURM
     //should return true/false according to result of Shell.perform
     @Override
-    public int[] submitJob(String jobFileName) throws InterruptedException, IOException {
-        // submits the job to SLURM - method from LSF plugin
-        Shell shell = new Shell("#!/bin/bash +x\n" + "cd " + remoteWorkingDirectory + "\n"
+    public int[] submitJob(String jobFileName, int walltime) throws InterruptedException, IOException {
+        String sbatchOutputFile = "_sbatch_output.txt";
+        // submits the job to SLURM - method from LSF plugin. Save stdout and exit code of sbatch to sbatchOutputFile
+        Shell shell = new Shell("#!/bin/bash +xl\n" + "cd " + remoteWorkingDirectory + "\n"
+                            + "module avail >/dev/null 2>&1\n" //rebuilding module cache
                             + "chmod 755 " + jobFileName + "\n"
-                            + "sbatch " + jobFileName + "\n");
+                            + "sbatch " + jobFileName + " > "+sbatchOutputFile+" 2>&1\n"
+                            + "echo $? >> "+sbatchOutputFile+"\n");
         shell.perform(build, launcher, blistener);
         
         //TODO - make separate function for recovering info?
         //get exit code by retrieving communicationFile
-        CopyToMasterNotifier copyFileToMaster = new CopyToMasterNotifier(communicationFile,"",true,masterWorkingDirectory,true);
+        CopyToMasterNotifier copyFileToMaster = new CopyToMasterNotifier(communicationFile+","+sbatchOutputFile,"",true,masterWorkingDirectory,true);
         BuildListenerAdapter fakeListener = new BuildListenerAdapter(TaskListener.NULL);
         copyFileToMaster.perform(build,launcher,fakeListener);
         
-        File file = new File(masterWorkingDirectory+"/"+communicationFile);
-        Scanner scanner = new Scanner(file,"utf-8");
-        int exitCode = scanner.nextInt(); //first line of file should be exit code
+        BufferedReader fileReader = new BufferedReader(new InputStreamReader(
+                new FileInputStream(masterWorkingDirectory + "/" + sbatchOutputFile),"utf-8"));
+        int jobID = -1;
+        int exitCode = -1;
         float computeTimeSec = 0;
-        String line = scanner.nextLine(); //empty line before `times` output //TODO - make this nicer...
-        while (scanner.hasNextLine()) {
-            line = scanner.nextLine();
-            String[] split = line.split("\\p{Alpha}\\s*");
-            float userTimeMin=Float.parseFloat(split[0]);
-            float userTimeSec=Float.parseFloat(split[1]);
-            float sysTimeMin=Float.parseFloat(split[2]);
-            float sysTimeSec=Float.parseFloat(split[3]);
-            listener.getLogger().println(userTimeMin+" "+userTimeSec+" "+sysTimeMin+" "+sysTimeSec);
-            computeTimeSec += userTimeMin*60 + userTimeSec + sysTimeMin*60 + sysTimeSec;
+        try {
+            String firstLine = fileReader.readLine();
+            listener.getLogger().println(firstLine);
+            String[] splitLine = firstLine.split(" ");
+            jobID = Integer.parseInt(splitLine[splitLine.length-1]);
+        } catch (NullPointerException | NumberFormatException e) {
+                listener.getLogger().println("Could not recover job ID: "+e.getMessage());
+        } 
+        try {
+            String line="";
+            String lastLine="";
+            while ((line = fileReader.readLine()) != null) {
+                lastLine=line;
+            }
+            exitCode = Integer.parseInt(lastLine);
+        } catch (NumberFormatException e) {
+            listener.getLogger().println("Could not recover sbatch exit code: "+e.getMessage());
         }
-        listener.getLogger().println("Total compute time: " + computeTimeSec + " seconds");
-        int[] output = {exitCode, (int)Math.ceil(computeTimeSec)};
+        fileReader.close();
+        try {
+            File file = new File(masterWorkingDirectory+"/"+communicationFile);
+            Scanner scanner = new Scanner(file,"utf-8");
+            int exitCodeInternal = scanner.nextInt(); //first line of file should be exit code
+            if (exitCodeInternal != exitCode) {
+                listener.getLogger().println("WARNING: Exit code of user script does not equal sbatch exit code");
+            }
+            String line = scanner.nextLine(); //empty line before `times` output //TODO - make this nicer...
+            while (scanner.hasNextLine()) {
+                line = scanner.nextLine();
+                String[] split = line.split("\\p{Alpha}\\s*");
+                float userTimeMin=Float.parseFloat(split[0]);
+                float userTimeSec=Float.parseFloat(split[1]);
+                float sysTimeMin=Float.parseFloat(split[2]);
+                float sysTimeSec=Float.parseFloat(split[3]);
+                listener.getLogger().println(userTimeMin+" "+userTimeSec+" "+sysTimeMin+" "+sysTimeSec);
+                computeTimeSec += userTimeMin*60 + userTimeSec + sysTimeMin*60 + sysTimeSec;
+            }
+            listener.getLogger().println("Total compute time: " + computeTimeSec + " seconds");
+        } catch (FileNotFoundException e) {
+            listener.getLogger().println("WARNING: Runtime information could not be retrieved. The job may have timed out.");
+            computeTimeSec = walltime * 60; //TODO - update this if walltime info is updated
+        }
+        int[] output = {jobID, exitCode, (int)Math.ceil(computeTimeSec)};
         return output;
         
         /*
@@ -125,11 +161,22 @@ public class SLURMSystem extends BatchSystem {
     }
     
     @Override
-    public void cleanUpFiles() throws InterruptedException {
+    public void cleanUpFiles(String filesToClean) throws InterruptedException {
+        String[] split = filesToClean.split(",");
+        String filesToCleanFormatted = String.join(" ",split);
         listener.getLogger().println("Cleaning up workspace");
-        Shell shell = new Shell("#!/bin/bash +x\n" + "cd "+remoteWorkingDirectory+"\n"
-                                + "rm -rf ./*");
-        shell.perform(build, launcher, blistener);
+        listener.getLogger().println("Deleting files: "+filesToCleanFormatted);
+        if (remoteWorkingDirectory.contains("workspace")) {
+            Shell shell = new Shell("#!/bin/bash +x\n"
+                                   +"echo "+remoteWorkingDirectory+"\n"
+                                   +"mkdir -p /tmp/jenkins\n"
+                                   +"mv "+remoteWorkingDirectory+" /tmp/jenkins/\n"
+                                   +"rm -rf /tmp/jenkins\n");
+            shell.perform(build, launcher, blistener);
+        }
+        else {
+            listener.getLogger().println("Something is wrong - remote directory does not contain 'workspace': "+remoteWorkingDirectory);
+        }
     }
     
     
