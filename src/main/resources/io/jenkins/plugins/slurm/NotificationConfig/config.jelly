@@ -2,13 +2,13 @@
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:entry title="On start" field="notifyStart">
+    <f:entry title="On start" field="notifyStartTicked">
         <f:checkbox/>
     </f:entry>
-    <f:entry title="On end" field="notifyEnd">
+    <f:entry title="On end" field="notifyEndTicked">
         <f:checkbox/>
     </f:entry>
-    <f:entry title="On abort" field="notifyAbort">
+    <f:entry title="On abort" field="notifyAbortTicked">
         <f:checkbox/>
     </f:entry>       
     <f:entry title="Email addresses to notify" field="notificationMailingList">
