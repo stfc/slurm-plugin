@@ -170,7 +170,7 @@ public class SLURMSystem extends BatchSystem {
             Shell shell = new Shell("#!/bin/bash +x\n"
                                    +"echo "+remoteWorkingDirectory+"\n"
                                    +"mkdir -p /tmp/jenkins\n"
-                                   +"mv "+remoteWorkingDirectory+" /tmp/jenkins/\n"
+                                   +"[ -d \""+remoteWorkingDirectory+"\" ] && mv "+remoteWorkingDirectory+" /tmp/jenkins/\n"
                                    +"rm -rf /tmp/jenkins\n");
             shell.perform(build, launcher, blistener);
         }
