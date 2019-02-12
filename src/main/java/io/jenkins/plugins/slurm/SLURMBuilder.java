@@ -31,10 +31,10 @@ public class SLURMBuilder extends BatchBuilder {
     
     @DataBoundConstructor
     public SLURMBuilder(String rawScript, int nodes, int tasks, int cpusPerTask,
-            int walltime, String queue, boolean exclusive, 
+            int walltime, String queue, String features, boolean exclusive, 
             NotificationConfig notificationConfig, String additionalFilesToRecover) {
          //   String outFileName, String errFileName) {
-        super(rawScript,nodes,tasks,cpusPerTask,walltime,queue,exclusive,
+        super(rawScript,nodes,tasks,cpusPerTask,walltime,queue,features,exclusive,
                 notificationConfig,additionalFilesToRecover);//,outFileName,errFileName);
     }
     
@@ -59,7 +59,7 @@ public class SLURMBuilder extends BatchBuilder {
         String communicationFile = "comms.txt";
         BatchSystem batchSystem = new SLURMSystem(run,workspace,launcher,listener,communicationFile);
         String formattedBatchOptions = slurmNode.formatBatchOptions(
-                nodes, tasks, cpusPerTask, walltime, queue, exclusive, 
+                nodes, tasks, cpusPerTask, walltime, queue, features, exclusive, 
                 notificationConfig);//, outFileName, errFileName);
         
         //generate scripts, write to file and copy to remote

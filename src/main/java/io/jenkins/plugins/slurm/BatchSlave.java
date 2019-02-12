@@ -40,10 +40,8 @@ public abstract class BatchSlave extends Slave {
     public abstract Computer createComputer();
     
     public abstract String formatBatchOptions(int nodes, int tasks, int cpusPerTask,
-            int walltime, String queue, boolean exclusive, 
+            int walltime, String queue, String features, boolean exclusive, 
             NotificationConfig notificationConfig);
-            //String outFileName, String errFileName);
-    
     
     
     //terminate the slave

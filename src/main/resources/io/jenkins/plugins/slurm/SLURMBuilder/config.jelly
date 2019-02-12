@@ -21,6 +21,9 @@
         <f:entry title="Queue" field="queue">
             <f:textbox/>
         </f:entry>
+        <f:entry title="Node features" field="features">
+            <f:textbox/>
+        </f:entry>
         <f:entry title="Exclusive mode" field="exclusive">
             <f:checkbox/>
         </f:entry>

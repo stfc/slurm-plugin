@@ -40,6 +40,8 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     protected int walltime;
     //queue selection
     protected String queue;
+    //features/properties of node
+    protected String features;
     //run job in exclusive mode
     protected boolean exclusive;
     //email notification configuration
@@ -58,7 +60,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     //private String slaveWorkingDirectory;
     
     public BatchBuilder(String rawScript, int nodes, int tasks, int cpusPerTask,
-            int walltime, String queue, boolean exclusive, 
+            int walltime, String queue, String features, boolean exclusive, 
             NotificationConfig notificationConfig, String additionalFilesToRecover) {
             //String outFileName, String errFileName) {
         this.rawScript=rawScript;
@@ -67,6 +69,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
         this.cpusPerTask=cpusPerTask;
         this.walltime=walltime;
         this.queue=queue;
+        this.features=features;
         this.exclusive=exclusive;
         this.notificationConfig=notificationConfig;
         this.additionalFilesToRecover=additionalFilesToRecover;
@@ -96,6 +99,10 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     
     public String getQueue() {
         return queue;
+    }
+    
+    public String getFeatures() {
+        return features;
     }
     
     public boolean isExclusive() {
@@ -251,38 +258,43 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     
     public boolean isConfigurationValid(BatchSlave node, TaskListener listener) {
         ResourceConfig config=node.getResourceConfig();
-        if (nodes<1 || nodes>config.getMaxNodesPerJob()) {
-            listener.error("'Nodes' selection is not within acceptable range (1-"+config.getMaxNodesPerJob()+")");
-            return false;
-        }
-        if (tasks<1) { //TODO - implement max tasks?
-            listener.error("'Number of tasks' selection is not within acceptable range (must be positive)");
-            return false;
-        }
-        if (cpusPerTask<1) { //TODO - implement max CPUs per task?
-            listener.error("'CPUs per task' selection is not within acceptable range (must be positive)");
-            return false;
-        }
-        if (tasks*cpusPerTask > nodes*config.getCpusPerNode()) {
-            listener.error("Total CPUs requested ("+tasks+"*"+cpusPerTask+"="+tasks*cpusPerTask+") exceed CPUs available on "+nodes+" nodes.");
-            return false;
-        }
-        if (walltime<1 || walltime*tasks*cpusPerTask>config.getMaxCpuTimePerJob()) {
-            listener.error("'Walltime' selection is not within acceptable range (total CPU time requested may not exceed "+config.getMaxCpuTimePerJob()+" minutes)"); //TODO - fix this warning
-            return false;
-        }
-        else if (config.getAvailableMinutes()-walltime*tasks*cpusPerTask<0) {
-            listener.error("System has insufficient available CPU time for this job. Please contact your administrator.");
-            return false;
-        }
-        if (queue==null) {
-            queue=""; //TODO - set a default? Warn about this? Make function for subclasses for setting default queue or throwing error?
-        }
-        else if (config.getAvailableQueues()!=null && config.getAvailableQueues().length()>0){
-            if (!config.getAvailableQueues().contains(queue)) { //TODO - make availQueues an array? Make sure full queue name fits an entry
-                listener.error("Queue is not available or does not exist");
+        if (config!=null) {
+            if (nodes<1 || nodes>config.getMaxNodesPerJob()) {
+                listener.error("'Nodes' selection is not within acceptable range (1-"+config.getMaxNodesPerJob()+")");
                 return false;
             }
+            if (tasks<1) { //TODO - implement max tasks?
+                listener.error("'Number of tasks' selection is not within acceptable range (must be positive)");
+                return false;
+            }
+            if (cpusPerTask<1) { //TODO - implement max CPUs per task?
+                listener.error("'CPUs per task' selection is not within acceptable range (must be positive)");
+                return false;
+            }
+            if (tasks*cpusPerTask > nodes*config.getCpusPerNode()) {
+                listener.error("Total CPUs requested ("+tasks+"*"+cpusPerTask+"="+tasks*cpusPerTask+") exceed CPUs available on "+nodes+" nodes.");
+                return false;
+            }
+            if (walltime<1 || walltime*tasks*cpusPerTask>config.getMaxCpuTimePerJob()) {
+                listener.error("Walltime requested is too high (total CPU time requested may not exceed "+config.getMaxCpuTimePerJob()+" minutes)"); //TODO - fix this warning
+                return false;
+            }
+            else if (config.getAvailableMinutes()-walltime*tasks*cpusPerTask<0) {
+                listener.error("System has insufficient available CPU time for this job. Please contact your Jenkins administrator.");
+                return false;
+            }
+            if (queue==null || queue.trim().isEmpty()) {
+                queue=""; //TODO - set a default? Warn about this? Make function for subclasses for setting default queue or throwing error?
+            }
+            else if (config.getAvailableQueues()!=null && config.getAvailableQueues().length()>0){
+                if (!config.getAvailableQueues().contains(queue)) { //TODO - make availQueues an array? Make sure full queue name fits an entry
+                    listener.error("Queue is not available or does not exist");
+                    return false;
+                }
+            }
+        }
+        if (features==null || features.trim().isEmpty()) {
+            features="";
         }
         if (notificationConfig==null) {
             notificationConfig = new NotificationConfig(false,false,false,""); //initialise to prevent later NullPointerException

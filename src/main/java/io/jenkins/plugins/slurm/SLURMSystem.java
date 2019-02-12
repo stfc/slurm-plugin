@@ -103,14 +103,23 @@ public class SLURMSystem extends BatchSystem {
         int jobID = -1;
         int exitCode = -1;
         float computeTimeSec = 0;
+        boolean failedToSubmit = false;
+        //recover job ID / check for job submission failure
         try {
             String firstLine = fileReader.readLine();
-            listener.getLogger().println(firstLine);
-            String[] splitLine = firstLine.split(" ");
-            jobID = Integer.parseInt(splitLine[splitLine.length-1]);
+            if (firstLine.contains("Batch job submission failed")){
+                failedToSubmit = true;
+                listener.getLogger().println(firstLine);
+            }
+            else { //submitted successfully
+                String[] splitLine = firstLine.split(" ");
+                jobID = Integer.parseInt(splitLine[splitLine.length-1]);
+                listener.getLogger().println("Job ID: "+jobID);
+            }
         } catch (NullPointerException | NumberFormatException e) {
-                listener.getLogger().println("Could not recover job ID: "+e.getMessage());
+            listener.getLogger().println("Could not recover job ID: "+e.getMessage());
         } 
+        //recover sbatch exit code
         try {
             String line="";
             String lastLine="";
@@ -122,6 +131,7 @@ public class SLURMSystem extends BatchSystem {
             listener.getLogger().println("Could not recover sbatch exit code: "+e.getMessage());
         }
         fileReader.close();
+        //retrieve user script exit code & time information
         try {
             File file = new File(masterWorkingDirectory+"/"+communicationFile);
             Scanner scanner = new Scanner(file,"utf-8");
@@ -142,8 +152,13 @@ public class SLURMSystem extends BatchSystem {
             }
             listener.getLogger().println("Total compute time: " + computeTimeSec + " seconds");
         } catch (FileNotFoundException e) {
-            listener.getLogger().println("WARNING: Runtime information could not be retrieved. The job may have timed out.");
-            computeTimeSec = walltime * 60; //TODO - update this if walltime info is updated
+            if (failedToSubmit) { //if it didn't submit in the first place, no time will have been used
+                computeTimeSec = 0;
+            }
+            else {
+                listener.getLogger().println("WARNING: Runtime information could not be retrieved. The job may have timed out.");
+                computeTimeSec = walltime * 60; //TODO - update this if walltime info is updated
+            }
         }
         int[] output = {jobID, exitCode, (int)Math.ceil(computeTimeSec)};
         return output;

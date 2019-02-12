@@ -25,6 +25,7 @@ public class ResourceConfig implements Describable<ResourceConfig>,Serializable 
         this.maxCpuTimePerJob=maxCpuTimePerJob;
         this.availableMinutes=availableMinutes;
         this.availableQueues=availableQueues;
+        verifyAvailableSeconds();
     }
     
     public int getMaxNodesPerJob() {
@@ -41,6 +42,10 @@ public class ResourceConfig implements Describable<ResourceConfig>,Serializable 
     
     public int getAvailableMinutes() {
         return availableMinutes;
+    }
+        
+    public int getAvailableSeconds() {
+        return availableSeconds;
     }
     
     public String getAvailableQueues() {
@@ -64,6 +69,10 @@ public class ResourceConfig implements Describable<ResourceConfig>,Serializable 
         verifyAvailableSeconds();
         this.availableSeconds -= time;
         this.availableMinutes = (int)Math.floor((double)availableSeconds/60.); //always round down
+        if (availableSeconds < 0 || availableMinutes < 0) { //shouldn't go negative, but if they do, set both to 0
+            this.availableSeconds = 0;
+            this.availableMinutes = 0;
+        }
     }
     
     @Extension

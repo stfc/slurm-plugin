@@ -63,7 +63,7 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void isScriptValid_FalseForNullScript() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", false, 
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
             new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String prefix = "#TEST";
@@ -76,7 +76,7 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void isScriptValid_FalseForEmptyScript() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", false, 
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
             new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String prefix = "#TEST";
@@ -89,7 +89,7 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void isScriptValid_FalseForScriptOfEntirelyInvalidLines() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", false, 
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
             new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String prefix = "#TEST";
@@ -102,7 +102,7 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void isScriptValid_TrueForValidScript() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", false, 
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
             new NotificationConfig(true, true, true, "test@test.com"), "");
         
         String prefix = "#TEST";
@@ -116,7 +116,7 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     @Test
     public void filterScript_CorrectlyFiltersScriptWithInvalidLines() {
         //generic non-failing constructor
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", false, 
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
             new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String script="start of script\n"
@@ -137,7 +137,7 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void generateSystemScript_CorrectlyGeneratesScript() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", false, 
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
             new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String formattedBatchOptions = "#SBATCH -N 1\n#SBATCH -n 1\n";
@@ -168,7 +168,7 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void generateUserScript_CorrectlyGeneratesScript() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", false, 
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
             new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String prefix = "#TEST";
