@@ -9,10 +9,6 @@ import hudson.model.TaskListener;
 
 import java.io.IOException;
 
-/**
- *
- * @author Laisvydas Skurevicius
- */
 public abstract class BatchSystem {
 
     //these required for Shell
