@@ -27,7 +27,6 @@
         <f:entry title="Exclusive mode" field="exclusive">
             <f:checkbox/>
         </f:entry>
-        <f:optionalProperty title="Email notifications" field="notificationConfig"/>
         <f:entry title="Files to recover" field="additionalFilesToRecover">
             <f:textbox/>
             Standard output and error logs of the form <i>slurm-jobID</i> will be recovered automatically. You only need to enter the names of any additional output files you wish to recover.

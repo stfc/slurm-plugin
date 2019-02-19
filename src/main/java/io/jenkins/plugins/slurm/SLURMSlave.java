@@ -17,6 +17,13 @@ public class SLURMSlave extends BatchSlave {
     private static final Logger LOGGER = Logger.getLogger(SLURMSlave.class.getName());
     private final String prefix = "#SBATCH";
 
+    /**
+     * @param resourceConfig limits on HPC resource usage
+     * @see ResourceConfig
+     * @see hudson.model.Slave#Slave(String,String,String,String,Node.Mode,String,ComputerLauncher,RetentionStrategy,List)
+     * @throws Descriptor.FormException
+     * @throws IOException
+     */
     @DataBoundConstructor
     public SLURMSlave(final String name, final String nodeDescription,
             final String remoteFS, final String numExecutors, final Mode mode,
@@ -29,22 +36,31 @@ public class SLURMSlave extends BatchSlave {
                 labelString, launcher, retentionStrategy,
                 nodeProperties, resourceConfig);
     }
-
+    
+    /*
+     * {@inheritDoc}
+     */
+    @Override
     public final String getPrefix() {
         return prefix;
     }
 
+    /*
+     * {@inheritDoc}
+     */
     @Override
     public final Computer createComputer() {
         LOGGER.info("Creating a new SLURM Slave");
         return new SLURMSlaveComputer(this);
     }
 
-    //ideally would be static, but isn't due to general BatchSlave calls in BatchBuilder.generateScript
+    /**
+     * {@inheritDoc}
+     */
     public final String formatBatchOptions(final int nodes, final int tasks,
             final int cpusPerTask, final int walltime, final String queue,
-            final String features, final boolean exclusive,
-            final NotificationConfig notificationConfig) {
+            final String features, final boolean exclusive) {
+            //final NotificationConfig notificationConfig) {
         StringBuffer buffer = new StringBuffer();
         buffer.append(prefix + " -N " + nodes + "\n");
         buffer.append(prefix + " -n " + tasks + "\n");
@@ -61,6 +77,7 @@ public class SLURMSlave extends BatchSlave {
             buffer.append(prefix + " --exclusive \n");
         }
         //NotificationConfig must be formatted by this class as it is not specific to any batch system
+        /*
         if (notificationConfig != null) { 
             if (notificationConfig.isNotifyStartTicked()
                     || notificationConfig.isNotifyEndTicked()
@@ -81,6 +98,7 @@ public class SLURMSlave extends BatchSlave {
                 buffer.append(prefix + " --mail-user=" + notificationConfig.getNotificationMailingList() + "\n");
             }
         }
+        */
         String finalString = buffer.toString();
         return finalString;
     }

@@ -19,18 +19,36 @@ import org.kohsuke.stapler.QueryParameter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * @author Eli Chadwick
+ */
 public class SLURMBuilder extends BatchBuilder {
 
+    /**
+     * @param rawScript                script to be run
+     * @param nodes                    number of nodes to reserve
+     * @param tasks                    number of tasks to run
+     * @param cpusPerTask              number of CPUs to reserve per task
+     * @param walltime                 walltime required for batch job
+     * @param queue                    batch system queue to use
+     * @param features                 specific node properties required
+     * @param exclusive                require exclusive use of reserved nodes
+     * @param additionalFilesToRecover extra files that are not recovered by default
+     */
     @DataBoundConstructor
     public SLURMBuilder(final String rawScript, final int nodes,
             final int tasks, final int cpusPerTask, final int walltime,
             final String queue, final String features, final boolean exclusive,
-            final NotificationConfig notificationConfig,
+            //final NotificationConfig notificationConfig,
             final String additionalFilesToRecover) {
         super(rawScript, nodes, tasks, cpusPerTask, walltime, queue, features, 
-                exclusive, notificationConfig, additionalFilesToRecover);
+                exclusive, /*notificationConfig,*/ additionalFilesToRecover);
     }
 
+    
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void perform(final Run<?, ?> run, final FilePath workspace,
             final Launcher launcher, final TaskListener listener)
@@ -55,7 +73,7 @@ public class SLURMBuilder extends BatchBuilder {
                 listener, communicationFile);
         String formattedBatchOptions = slurmNode.formatBatchOptions(
                 getNodes(), getTasks(), getCpusPerTask(), getWalltime(),
-                getQueue(), getFeatures(), isExclusive(), getNotificationConfig());
+                getQueue(), getFeatures(), isExclusive()); //, getNotificationConfig()
 
         //generate scripts, write to file and copy to remote
         String userScriptName = "_user_script.sh";

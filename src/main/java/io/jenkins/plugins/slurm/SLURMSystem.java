@@ -18,14 +18,23 @@ import java.util.Scanner;
 
 public class SLURMSystem extends BatchSystem {
 
+     /**
+     * @param run                 as provided to {@link BatchBuilder#perform(Run, FilePath, Launcher, TaskListener)}
+     * @param workspace           as above
+     * @param launcher            as above
+     * @param listener            as above
+     * @param communicationFile   file to write the exit code and time information
+     *                            to for later recovery
+     */
     public SLURMSystem(final Run<?, ?> run, final FilePath workspace, 
             final Launcher launcher, final TaskListener listener,
             final String communicationFile) { 
         super(run, workspace, launcher, listener, communicationFile);
     }
 
-    //submit job to SLURM
-    //should return true/false according to result of Shell.perform
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int[] submitJob(String jobFileName, int walltime) 
             throws InterruptedException, IOException {
@@ -112,6 +121,9 @@ public class SLURMSystem extends BatchSystem {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final void cleanUpFiles() throws InterruptedException {
         getListener().getLogger().println("Cleaning up workspace");

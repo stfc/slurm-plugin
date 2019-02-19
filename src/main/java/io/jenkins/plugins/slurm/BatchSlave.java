@@ -18,6 +18,13 @@ public abstract class BatchSlave extends Slave {
     //subclasses must define/implement logger and prefix
     private ResourceConfig resourceConfig;
 
+    /**
+     * @param resourceConfig limits on HPC resource usage
+     * @see ResourceConfig
+     * @see hudson.model.Slave#Slave(String,String,String,String,Node.Mode,String,ComputerLauncher,RetentionStrategy,List)
+     * @throws Descriptor.FormException
+     * @throws IOException
+     */
     public BatchSlave(final String name, final String nodeDescription,
             final String remoteFS, final String numExecutors, final Mode mode,
             final String labelString, final ComputerLauncher launcher, 
@@ -29,21 +36,59 @@ public abstract class BatchSlave extends Slave {
                 launcher, retentionStrategy, nodeProperties);
         this.resourceConfig = resourceConfig;
     }
-
+    
+    /**
+     * Get the configuration of limits on HPC resource usage.
+     * @return can be null
+     */
     public final ResourceConfig getResourceConfig() {
         return resourceConfig;
     }
 
+    /**
+     * Get the prefix for HPC options on the batch system, e.g.&nbsp;#SBATCH.
+     */
     public abstract String getPrefix();
 
+    /*
+     * {@inheritDoc}
+     */
     @Override
     public abstract Computer createComputer();
 
+    /**
+     * Format HPC options.
+     * <p>
+     * Takes user input of resource requirements and formats for relevant 
+     * batch system.
+     *
+     * @param nodes                    number of nodes to reserve
+     * @param tasks                    number of tasks to run
+     * @param cpusPerTask              number of CPUs to reserve per task
+     * @param walltime                 walltime required for batch job
+     * @param queue                    batch system queue to use
+     * @param features                 specific node properties required
+     * @param exclusive                require exclusive use of reserved nodes
+     * @return String of formatted HPC options.
+     */
     public abstract String formatBatchOptions(int nodes, int tasks, int cpusPerTask,
-            int walltime, String queue, String features, boolean exclusive,
-            NotificationConfig notificationConfig);
+            int walltime, String queue, String features, boolean exclusive);
+            //NotificationConfig notificationConfig);
+
+    /**
+     * Reduce the time available on the node.
+     * 
+     * @param time   the amount of time to reduce by (seconds)
+     */
+    public final void reduceAvailableSeconds(final int time) {
+        resourceConfig.reduceAvailableSeconds(time);
+    }
     
-    //terminate the slave
+    /**
+     * Terminate the slave.
+     *
+     * @author Laisvydas Skurevicius
+     */
     public final void terminate() {
         LOGGER.log(Level.INFO, "Terminating slave {0}", getNodeName());
         try {
@@ -52,10 +97,4 @@ public abstract class BatchSlave extends Slave {
             LOGGER.log(Level.WARNING, "Failed to terminate instance: " + getNodeName(), e);
         }
     }
-
-    public final void reduceAvailableSeconds(final int time) {
-        resourceConfig.reduceAvailableSeconds(time);
-    }
-
-    //subclasses must define formatBatchOptions function
 }

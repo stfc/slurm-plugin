@@ -24,17 +24,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 public class BatchBuilderTest {//tests methods in BatchBuilder
     
-    @ClassRule
-    public static final TemporaryFolder masterFolder = new TemporaryFolder();
-    
-    @ClassRule
-    public static final TemporaryFolder remoteFolder = new TemporaryFolder();
-    
-    @ClassRule
-    public static final JenkinsRule jenkins = new JenkinsRule();
-    
-    private static SLURMSlave slave; //TODO - remove if this doesn't work
-    
     private static final Logger LOGGER = Logger.getLogger(SLURMSlave.class.getName());
 
     //this doesn't work. TODO - note in docs that this doesn't work
@@ -63,8 +52,8 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void isScriptValid_FalseForNullScript() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
-            new NotificationConfig(true, true, true, "test@test.com"), "");
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, ""); 
+            //new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String prefix = "#TEST";
         String inputScript = null;
@@ -76,8 +65,8 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void isScriptValid_FalseForEmptyScript() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
-            new NotificationConfig(true, true, true, "test@test.com"), "");
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, "");
+            //new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String prefix = "#TEST";
         String inputScript = "";
@@ -89,8 +78,8 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void isScriptValid_FalseForScriptOfEntirelyInvalidLines() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
-            new NotificationConfig(true, true, true, "test@test.com"), "");
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, "");
+            //new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String prefix = "#TEST";
         String inputScript = "#TEST -N 1\n   \n\t\n\n";
@@ -102,8 +91,8 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void isScriptValid_TrueForValidScript() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
-            new NotificationConfig(true, true, true, "test@test.com"), "");
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, "");
+            //new NotificationConfig(true, true, true, "test@test.com"), "");
         
         String prefix = "#TEST";
         String inputScript = "#TEST -n 1\nValid content\n";
@@ -116,8 +105,8 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     @Test
     public void filterScript_CorrectlyFiltersScriptWithInvalidLines() {
         //generic non-failing constructor
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
-            new NotificationConfig(true, true, true, "test@test.com"), "");
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, "");
+            //new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String script="start of script\n"
               +"prefix line\n"
@@ -137,8 +126,8 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void generateSystemScript_CorrectlyGeneratesScript() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
-            new NotificationConfig(true, true, true, "test@test.com"), "");
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, "");
+            //new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String formattedBatchOptions = "#SBATCH -N 1\n#SBATCH -n 1\n";
         String userScriptName = "test_script.sh";
@@ -168,8 +157,8 @@ public class BatchBuilderTest {//tests methods in BatchBuilder
     
     @Test
     public void generateUserScript_CorrectlyGeneratesScript() {
-        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, 
-            new NotificationConfig(true, true, true, "test@test.com"), "");
+        BatchBuilder builder=new SLURMBuilder("test", 1, 1, 1, 1, "queue", "", false, "");
+            //new NotificationConfig(true, true, true, "test@test.com"), "");
             
         String prefix = "#TEST";
         String inputScript = "#TEST -n 1\nTest content\n";
