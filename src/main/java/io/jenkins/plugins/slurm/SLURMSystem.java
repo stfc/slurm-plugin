@@ -33,40 +33,54 @@ public class SLURMSystem extends BatchSystem {
     @Override
     public int[] submitJob(String jobFileName, int walltime) 
             throws InterruptedException, IOException {
-        String sbatchOutputFile = "_sbatch_output.txt";
-        //submit the job to SLURM - method from LSF plugin
-        //save stdout and exit code of sbatch to sbatchOutputFile
+                
+        String sbatchOutputFile = "_sbatch_output.txt"; //TODO - make this a property retrievable by SLURMSystem
+        
+        //submit the job to SLURM
+        //save stdout and exit code of sbatch to sbatchOutputFile on the remote
         Shell shell = new Shell("#!/bin/bash +xl\n" + "cd " + getRemoteWorkingDirectory() + "\n"
-                            + "module avail >/dev/null 2>&1\n" //rebuilding module cache
+                            + "module avail >/dev/null 2>&1\n" //rebuilds module cache
                             + "chmod 755 " + jobFileName + "\n"
                             + "sbatch " + jobFileName + " > " + sbatchOutputFile + " 2>&1\n"
                             + "echo $? >> " + sbatchOutputFile + "\n");
         shell.perform(getAbstractBuild(), getLauncher(), getBuildListener());
 
         //TODO - make separate function for recovering info?
-        //get exit code by retrieving communicationFile
+        //copy files to master
         CopyToMasterNotifier copyFileToMaster = 
                 new CopyToMasterNotifier(getCommunicationFile() + "," + sbatchOutputFile, 
                         "", true, getMasterWorkingDirectory(), true);
         BuildListenerAdapter fakeListener = new BuildListenerAdapter(TaskListener.NULL);
         copyFileToMaster.perform(getAbstractBuild(), getLauncher(), fakeListener);
 
-        BufferedReader fileReader = new BufferedReader(new InputStreamReader(
-                new FileInputStream(getMasterWorkingDirectory() + "/" + sbatchOutputFile), "utf-8"));
+        //set default outputs
         int jobID = -1;
         int exitCode = -1;
         float computeTimeSec = 0;
         boolean failedToSubmit = false;
+        
+        //TODO - neaten this up
+        //read sbatch output file
+        BufferedReader fileReader = new BufferedReader(new InputStreamReader(
+                new FileInputStream(getMasterWorkingDirectory() + "/" + sbatchOutputFile), "utf-8"));
         //recover job ID / check for job submission failure
         try {
-            String firstLine = fileReader.readLine();
-            if (firstLine.contains("Batch job submission failed")) {
-                failedToSubmit = true;
-                getListener().getLogger().println(firstLine);
-            } else { //submitted successfully
-                String[] splitLine = firstLine.split(" ");
+            //read lines from sbatch output, search for either submission or failure
+            String line = fileReader.readLine();
+            while(line != null && !line.contains("Submitted batch job")) {
+                if (line.contains("Batch job submission failed")) {
+                    failedToSubmit = true;
+                    getListener().getLogger().println(line);
+                }
+                line = fileReader.readLine();
+            }
+            if (line.contains("Submitted batch job")) { //submitted successfully
+                String[] splitLine = line.split(" ");
                 jobID = Integer.parseInt(splitLine[splitLine.length - 1]);
                 getListener().getLogger().println("Job ID: " + jobID);
+            } else { //line == null - this shouldn't happen (job should always either submit or fail)
+                getListener().getLogger().println("Could not identify if job was submitted. No job ID found.");
+                failedToSubmit = true; //this is uncertain, but means no time will be subtracted
             }
         } catch (NullPointerException | NumberFormatException e) {
             getListener().getLogger().println("Could not recover job ID: " + e.getMessage());
@@ -83,14 +97,17 @@ public class SLURMSystem extends BatchSystem {
             getListener().getLogger().println("Could not recover sbatch exit code: " + e.getMessage());
         }
         fileReader.close();
-        //retrieve user script exit code & time information
+        
+        //retrieve user script exit code & time information from communication file
         try {
             File file = new File(getMasterWorkingDirectory() + "/" + getCommunicationFile());
             Scanner scanner = new Scanner(file, "utf-8");
+            //get exit code
             int exitCodeInternal = scanner.nextInt(); //first line of file should be exit code
             if (exitCodeInternal != exitCode) {
                 getListener().getLogger().println("WARNING: Exit code of user script does not equal sbatch exit code");
             }
+            //get time information
             String line = scanner.nextLine(); //empty line before `times` output //TODO - make this nicer...
             while (scanner.hasNextLine()) {
                 line = scanner.nextLine();
@@ -108,9 +125,11 @@ public class SLURMSystem extends BatchSystem {
                 computeTimeSec = 0;
             } else {
                 getListener().getLogger().println("WARNING: Runtime information could not be retrieved. The job may have timed out.");
-                computeTimeSec = walltime * 60; //TODO - update this if walltime info is updated
+                computeTimeSec = walltime * 60; //TODO - make this CPU time not walltime
             }
         }
+        
+        //return job ID, exit code and CPU time used
         int[] output = {jobID, exitCode, (int) Math.ceil(computeTimeSec)};
         return output;
 

@@ -20,6 +20,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
+ * Provides an interface within the Jenkins job configuration. Stores user input,
+ * and contains methods for validating said input and processing it into batch
+ * scripts to be sent to the relevant HPC system. Calls SLURMSystem
+ * methods to submit said scripts as a job.
+ *
  * @author Eli Chadwick
  */
 public class SLURMBuilder extends BatchBuilder {
@@ -43,13 +48,15 @@ public class SLURMBuilder extends BatchBuilder {
             final Launcher launcher, final TaskListener listener)
             throws InterruptedException, IOException {
 
-        //get computer and batch system set up and check all valid
+        //check job is running on a SLURMSlave (otherwise it won't work)
         Computer computer = getComputer(workspace);
         Node node = getNode(computer);
         if (!(computer instanceof SLURMSlaveComputer)) {
-            throw new AbortException("Computer is not a SLURM node computer");
+            throw new AbortException("Not running on a SLURM agent");
         }
         SLURMSlave slurmNode = (SLURMSlave) node;
+        
+        //verify script and resource configuration
         if (!isScriptValid(getRawScript(), slurmNode.getPrefix())) {
             throw new AbortException("No valid script entered. Script is either empty or contains no valid content (batch options inside the script are not read).");
         }
@@ -57,37 +64,31 @@ public class SLURMBuilder extends BatchBuilder {
             throw new AbortException("Configuration is invalid");
         }
 
+        //set up SLURM system
         String communicationFile = "comms.txt";
         BatchSystem batchSystem = new SLURMSystem(run, workspace, launcher,
                 listener, communicationFile);
+        listener.getLogger().println("Remote: " + workspace.getRemote());
+
+        //generate scripts and write to remote workspace       
+        //format options
         String formattedBatchOptions = slurmNode.formatBatchOptions(
                 getNodes(), getTasks(), getCpusPerTask(), getWalltime(),
                 getQueue(), getFeatures(), isExclusive()); //, getNotificationConfig()
-
-        //generate scripts, write to file and copy to remote
+        //user script
         String userScriptName = "_user_script.sh";
         String userScript = generateUserScript(getRawScript(), slurmNode.getPrefix());
+        listener.getLogger().print(userScriptName + ":\n" + userScript);
+        FilePath userScriptPath = new FilePath(workspace, userScriptName);
+        userScriptPath.write(userScript, "utf-8");
+        //system script
         String systemScriptName = "_system_script.sh";
         String systemScript = generateSystemScript(formattedBatchOptions, 
                 userScriptName, batchSystem.getCommunicationFile());
         listener.getLogger().print(systemScriptName + ":\n" + systemScript);
-        listener.getLogger().print(userScriptName + ":\n" + userScript);
-
-        //TODO - use methods of FilePath class to write files directly to remote WITHOUT having to save to master & then copy?
-        listener.getLogger().println("Remote: " + workspace.getRemote());
-        
-        FilePath userScriptPath = new FilePath(workspace, userScriptName);
         FilePath systemScriptPath = new FilePath(workspace, systemScriptName);
-        
-        listener.getLogger().println("User script path: "+userScriptPath.getRemote());
-        
-        userScriptPath.write(userScript, "utf-8");
         systemScriptPath.write(systemScript, "utf-8");
-        
-        //writeScriptToFile(systemScript, systemScriptName);
-        //writeScriptToFile(userScript, userScriptName);
-        //sendFilesToRemote(systemScriptName + "," + userScriptName, 
-        //        run, workspace, launcher, listener);
+
         listener.getLogger().println("Scripts sent to remote");
 
         //run job and recover artifacts
@@ -95,23 +96,21 @@ public class SLURMBuilder extends BatchBuilder {
         int jobID = output[0];
         int exitCode = output[1];
         int computeTimeSec = output[2];
+        
+        //account for time used
         slurmNode.reduceAvailableSeconds(computeTimeSec);
+        
+        //warn if job failed
         if (exitCode != 0) {
             listener.error("SLURM job did not complete successfully. Files will be recovered before this job is aborted.");
         }
+        
+        //recover files from remote - useful to do before killing job if it's failed
         listener.getLogger().println("Recovering files from remote");
         ArrayList<String> filesToRecover = new ArrayList<String>();
-        if (jobID >= 0) {
+        if (jobID >= 0) { //job ran successfully
             filesToRecover.add("slurm-" + jobID + "*");
         }
-        /*
-        if (outFileName != null && outFileName.length()>0) {
-            filesToRecover.add(outFileName);
-        }
-        if (errFileName != null && errFileName.length()>0) {
-            filesToRecover.add(errFileName);
-        }
-        */
         filesToRecover.add("_sbatch_output.txt"); //TODO - make sbatchOutput a property of SLURMSystem
         filesToRecover.add(batchSystem.getCommunicationFile()); //TODO - remove this, purely for debug
         String filesToRecoverString;
@@ -124,7 +123,12 @@ public class SLURMBuilder extends BatchBuilder {
         listener.getLogger().println("Recovery destination: " + recoveryDestination);
         recoverFiles(filesToRecoverString, recoveryDestination, run, workspace,
                 launcher, listener);
+                
+        //clean up - important that this is done before killing the job if it's failed
         batchSystem.cleanUpFiles();
+        
+        //kill the job if it failed
+        //does not prevent any code running here but changes Jenkins job status
         if (exitCode != 0) {
             throw new AbortException("SLURM job did not complete successfully");
         }
@@ -147,11 +151,6 @@ public class SLURMBuilder extends BatchBuilder {
         public final boolean isApplicable(final Class<? extends AbstractProject> type) {
             return true;
         }
-
-        //public FormValidation doCheckField(@QueryParameter String value) {
-         //   if (value.isGood()) return FormValidation.ok();
-          //  else return FormValidation.error(Messaaaaaaages.xx.y.z());
-        //}
 
         public final FormValidation doCheckNodes(@QueryParameter final int value) {
             if (value >= 1) {

@@ -20,6 +20,10 @@ import java.io.PrintWriter;
 import java.util.Scanner;
 
 /**
+ * Provides an interface within the Jenkins job configuration. Stores user input,
+ * and contains methods for validating said input and processing it into batch
+ * scripts to be sent to the relevant HPC system.
+ *
  * @author Eli Chadwick
  */
 public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
@@ -173,8 +177,9 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
             TaskListener listener) throws InterruptedException, IOException;
 
     /**
-     * Filter unexpected HPC options, whitespace and other invalid lines from 
-     * the input script.
+     * Filter unexpected HPC options, and whitespace and other invalid lines from 
+     * the input script. 
+     * To develop: removal of 'hazardous' lines (possibly system-dependent).
      *
      * @param script   script to be filtered
      * @param prefix   lines beginning with this string will be filtered out
@@ -185,7 +190,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
         StringBuffer buffer = new StringBuffer();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            if (line.indexOf(prefix) == 0) { //only check start of line
+            if (line.indexOf(prefix) == 0) { //only check start of line for prefix
                 continue;
             } else {
                 buffer.append(line + "\n");
@@ -226,7 +231,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
      * @param listener   as provided to {@link #perform(Run, FilePath, Launcher, TaskListener)}
      * @return true if all parts of configuration are valid, false if anything is invalid
      */
-    public final boolean isConfigurationValid(final BatchSlave node, final TaskListener listener) {
+    public boolean isConfigurationValid(final BatchSlave node, final TaskListener listener) {
         ResourceConfig config = node.getResourceConfig();
         if (config != null) {
             if (nodes < 1 || nodes > config.getMaxNodesPerJob()) {
@@ -253,15 +258,16 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
                 return false;
             }
             if (queue == null || queue.trim().isEmpty()) {
-                queue = ""; //TODO - set a default? Warn about this? Make function for subclasses for setting default queue or throwing error?
+                queue = ""; //To develop: set a default? Warn about this? Add ResourceConfig option for setting default queue?
             } else if (config.getAvailableQueues() != null
                     && !config.getAvailableQueues().isEmpty()) {
-                if (!config.getAvailableQueues().contains(queue)) { //TODO - make availQueues an array? Make sure full queue name fits an entry
+                if (!config.getAvailableQueues().contains(queue)) { //To develop: make availableQueues an array/List? Make sure full queue name fits an entry in the array
                     listener.error("Queue is not available or does not exist");
                     return false;
                 }
             }
         }
+        //To develop: validation of features, if possible (maybe by subclasses)
         if (features == null || features.trim().isEmpty()) {
             features = "";
         }
@@ -348,20 +354,23 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     }
 
     /**
-     * Write a script to file.
+     * Write a script to file on the master.
      *
      * @param script     the script to write to file
-     * @param fileName   name of the file to be written
+     * @param filePath   path of the file to be written
      * @throws IOException
      */
-    protected final void writeScriptToFile(final String script, final String fileName) throws IOException {
-        PrintWriter writer = new PrintWriter("work/userContent/" + fileName, "UTF-8");
+    protected final void writeScriptToFile(final String script, final String filePath) throws IOException {
+        PrintWriter writer = new PrintWriter(filePath, "UTF-8");
         writer.print(script);
         writer.close();
     }
 
     /**
      * Copy files from master to a remote workspace (on an SSH slave).
+     * Discouraged to use this + writeScriptToFile to create files and send them
+     * to the remote - instead use FilePath.write method on a FilePath for the
+     * remote workspace
      *
      * @param fileNames   file names to copy
      * @param run         as provided to {@link #perform(Run, FilePath, Launcher, TaskListener)}

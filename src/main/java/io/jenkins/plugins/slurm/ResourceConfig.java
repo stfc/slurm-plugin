@@ -13,11 +13,37 @@ import java.io.Serializable;
  * @author Eli Chadwick
  */
 public class ResourceConfig implements Describable<ResourceConfig>, Serializable {
+    /**
+     * The maximum number of nodes a user can request for a job.
+     */
     private int maxNodesPerJob;
+
+    /**
+     * The number of CPUs per node on the HPC system.
+     */
     private int cpusPerNode;
+    
+    /**
+     * The maximum amount of CPU time a user can request for a job.
+     * CPU time requested = tasks * CPUs per task * walltime requested.
+     */
     private int maxCpuTimePerJob;
+    
+    /**
+     * The number of CPU minutes available on the HPC system.
+     */
     private int availableMinutes;
+    
+    /**
+     * The number of CPU seconds available on the HPC system.
+     */
     private int availableSeconds;
+    
+    /**
+     * Queues that users are permitted to use. If left empty, user-entered 
+     * queues will not be checked for validity (though queues that do not exist
+     * on the HPC system will throw errors there which will be recovered).
+     */
     private String availableQueues;
 
     @DataBoundConstructor
@@ -61,9 +87,13 @@ public class ResourceConfig implements Describable<ResourceConfig>, Serializable
         return DESCRIPTOR;
     }
 
-    //availableMinutes can be updated without updating availableSeconds
-    //if config is saved without changing availableMinutes, don't want availableSeconds to change
-    //probably overly pedantic
+    /**
+     * Check that availableMinutes and availableSeconds are consistent.
+     * availableSeconds can be between 0-59 higher than availableMinutes*60.
+     * If it is outside this range, it is reset to availableMinutes*60.
+     * Function exists because availableMinutes can be updated by user without
+     * changing availableSeconds directly.
+     */
     public final void verifyAvailableSeconds() {
         if (availableSeconds < availableMinutes * 60 
                 || availableSeconds > availableMinutes * 60 + 59) {
@@ -72,6 +102,11 @@ public class ResourceConfig implements Describable<ResourceConfig>, Serializable
         }
     }
 
+    /*
+     * Reduce the time available on the HPC system.
+     *
+     * @param time   the number of seconds to reduce the available time by
+     */
     public final void reduceAvailableSeconds(final int time) {
         verifyAvailableSeconds();
         this.availableSeconds -= time;

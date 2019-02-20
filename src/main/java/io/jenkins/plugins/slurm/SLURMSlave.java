@@ -52,6 +52,7 @@ public class SLURMSlave extends BatchSlave {
         return new SLURMSlaveComputer(this);
     }
 
+    //TODO - migrate this method to SLURMBuilder/SLURMSystem
     /**
      * {@inheritDoc}
      */

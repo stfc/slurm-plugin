@@ -9,11 +9,24 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Eli Chadwick
  */
 public class NotificationConfig implements Describable<NotificationConfig> {
-    //events to notify on
+    /**
+     * Notify user when the HPC job starts.
+     */
     private boolean notifyStartTicked;
+
+    /**
+     * Notify user when the HPC job ends.
+     */
     private boolean notifyEndTicked;
+
+    /**
+     * Notify user when the HPC job is aborted.
+     */
     private boolean notifyAbortTicked;
-    //mailing list for notification
+    
+    /**
+     * Usernames or email addresses to send notifications to.
+     */
     private String notificationMailingList;
 
     @DataBoundConstructor
@@ -42,6 +55,10 @@ public class NotificationConfig implements Describable<NotificationConfig> {
         return notificationMailingList;
     }
 
+    /**
+     * Check validity of the configuration. Returns false if notifications are
+     * requested for particular events but no username/email has been entered.
+     */
     public final boolean isValid() {
         if (notifyStartTicked || notifyEndTicked || notifyAbortTicked) {
             if (notificationMailingList == null || notificationMailingList.trim().isEmpty()) {

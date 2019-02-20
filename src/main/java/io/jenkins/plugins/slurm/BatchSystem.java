@@ -14,16 +14,16 @@ import java.io.IOException;
  */
 public abstract class BatchSystem {
 
-    //these required for Shell
+    //TODO - move abstractBuild and buildListener to SLURMSystem?
     /**
      * The run property cast to an {@link AbstractBuild}.
      */
-    private final AbstractBuild<?, ?> abstractBuild;
+    private final AbstractBuild<?, ?> abstractBuild; //required for Shell calls
     
     /**
      * The listener property cast to a {@link BuildListener}.
      */
-    private final BuildListener buildListener;
+    private final BuildListener buildListener; //required for Shell calls
     
     /**
      * The build this is part of.
