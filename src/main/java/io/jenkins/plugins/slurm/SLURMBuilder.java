@@ -23,18 +23,7 @@ import java.util.ArrayList;
  * @author Eli Chadwick
  */
 public class SLURMBuilder extends BatchBuilder {
-
-    /**
-     * @param rawScript                script to be run
-     * @param nodes                    number of nodes to reserve
-     * @param tasks                    number of tasks to run
-     * @param cpusPerTask              number of CPUs to reserve per task
-     * @param walltime                 walltime required for batch job
-     * @param queue                    batch system queue to use
-     * @param features                 specific node properties required
-     * @param exclusive                require exclusive use of reserved nodes
-     * @param additionalFilesToRecover extra files that are not recovered by default
-     */
+    
     @DataBoundConstructor
     public SLURMBuilder(final String rawScript, final int nodes,
             final int tasks, final int cpusPerTask, final int walltime,
@@ -84,11 +73,21 @@ public class SLURMBuilder extends BatchBuilder {
         listener.getLogger().print(systemScriptName + ":\n" + systemScript);
         listener.getLogger().print(userScriptName + ":\n" + userScript);
 
-        writeScriptToFile(systemScript, systemScriptName);
-        writeScriptToFile(userScript, userScriptName);
+        //TODO - use methods of FilePath class to write files directly to remote WITHOUT having to save to master & then copy?
         listener.getLogger().println("Remote: " + workspace.getRemote());
-        sendFilesToRemote(systemScriptName + "," + userScriptName, 
-                run, workspace, launcher, listener);
+        
+        FilePath userScriptPath = new FilePath(workspace, userScriptName);
+        FilePath systemScriptPath = new FilePath(workspace, systemScriptName);
+        
+        listener.getLogger().println("User script path: "+userScriptPath.getRemote());
+        
+        userScriptPath.write(userScript, "utf-8");
+        systemScriptPath.write(systemScript, "utf-8");
+        
+        //writeScriptToFile(systemScript, systemScriptName);
+        //writeScriptToFile(userScript, userScriptName);
+        //sendFilesToRemote(systemScriptName + "," + userScriptName, 
+        //        run, workspace, launcher, listener);
         listener.getLogger().println("Scripts sent to remote");
 
         //run job and recover artifacts

@@ -2,6 +2,9 @@ package io.jenkins.plugins.slurm;
 
 import java.util.logging.Logger;
 
+/**
+ * @author Eli Chadwick
+ */
 public class SLURMSlaveComputer extends BatchSlaveComputer {
     protected static final Logger LOGGER = Logger.getLogger(SLURMSlaveComputer.class.getName());
 

@@ -13,17 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * @author Eli Chadwick
+ * An agent which can store limits on HPC resource usage.
+ * Can format options for the SLURM batch system.
+ */
 public class SLURMSlave extends BatchSlave {
     private static final Logger LOGGER = Logger.getLogger(SLURMSlave.class.getName());
     private final String prefix = "#SBATCH";
 
-    /**
-     * @param resourceConfig limits on HPC resource usage
-     * @see ResourceConfig
-     * @see hudson.model.Slave#Slave(String,String,String,String,Node.Mode,String,ComputerLauncher,RetentionStrategy,List)
-     * @throws Descriptor.FormException
-     * @throws IOException
-     */
     @DataBoundConstructor
     public SLURMSlave(final String name, final String nodeDescription,
             final String remoteFS, final String numExecutors, final Mode mode,
@@ -37,7 +35,7 @@ public class SLURMSlave extends BatchSlave {
                 nodeProperties, resourceConfig);
     }
     
-    /*
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -45,7 +43,7 @@ public class SLURMSlave extends BatchSlave {
         return prefix;
     }
 
-    /*
+    /**
      * {@inheritDoc}
      */
     @Override

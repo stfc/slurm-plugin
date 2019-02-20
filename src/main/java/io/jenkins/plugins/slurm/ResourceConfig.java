@@ -9,6 +9,9 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.Serializable;
 
+/**
+ * @author Eli Chadwick
+ */
 public class ResourceConfig implements Describable<ResourceConfig>, Serializable {
     private int maxNodesPerJob;
     private int cpusPerNode;

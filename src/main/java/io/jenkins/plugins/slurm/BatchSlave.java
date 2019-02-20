@@ -13,18 +13,29 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * An agent which can store limits on HPC resource usage.
+ * Subclasses of {@link BatchSlave} must define their own prefix and prefix getter,
+ * as well as their own logger where necessary.
+ * These agents also control the formatting of batch options input by the user.
+ * Subclasses must therefore implement the 
+ * {@link formatBatchOptions(int, int, int, int, String, String, boolean)} method.
+ * @author Eli Chadwick
+ */
 public abstract class BatchSlave extends Slave {
+    
+    /**
+     * Used for logging information.
+     */
     private static final Logger LOGGER = Logger.getLogger(BatchSlave.class.getName());
-    //subclasses must define/implement logger and prefix
+    
+    //subclasses must define/implement their own logger and prefix
+    
+    /**
+     * Configuration of limits on HPC resource usage.
+     */
     private ResourceConfig resourceConfig;
 
-    /**
-     * @param resourceConfig limits on HPC resource usage
-     * @see ResourceConfig
-     * @see hudson.model.Slave#Slave(String,String,String,String,Node.Mode,String,ComputerLauncher,RetentionStrategy,List)
-     * @throws Descriptor.FormException
-     * @throws IOException
-     */
     public BatchSlave(final String name, final String nodeDescription,
             final String remoteFS, final String numExecutors, final Mode mode,
             final String labelString, final ComputerLauncher launcher, 
@@ -50,7 +61,7 @@ public abstract class BatchSlave extends Slave {
      */
     public abstract String getPrefix();
 
-    /*
+    /**
      * {@inheritDoc}
      */
     @Override

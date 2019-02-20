@@ -16,16 +16,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Scanner;
 
+/**
+ * @author Eli Chadwick
+ */
 public class SLURMSystem extends BatchSystem {
 
-     /**
-     * @param run                 as provided to {@link BatchBuilder#perform(Run, FilePath, Launcher, TaskListener)}
-     * @param workspace           as above
-     * @param launcher            as above
-     * @param listener            as above
-     * @param communicationFile   file to write the exit code and time information
-     *                            to for later recovery
-     */
     public SLURMSystem(final Run<?, ?> run, final FilePath workspace, 
             final Launcher launcher, final TaskListener listener,
             final String communicationFile) { 

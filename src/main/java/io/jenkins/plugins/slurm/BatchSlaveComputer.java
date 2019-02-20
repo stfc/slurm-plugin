@@ -4,6 +4,9 @@ import hudson.slaves.SlaveComputer;
 
 import java.util.logging.Logger;
 
+/**
+ * @author Eli Chadwick
+ */
 public class BatchSlaveComputer extends SlaveComputer {
     //implementation currently redundant, but may later be useful
     protected static final Logger LOGGER = Logger.getLogger(BatchSlaveComputer.class.getName());

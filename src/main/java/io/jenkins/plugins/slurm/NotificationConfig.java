@@ -5,6 +5,9 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+/**
+ * @author Eli Chadwick
+ */
 public class NotificationConfig implements Describable<NotificationConfig> {
     //events to notify on
     private boolean notifyStartTicked;

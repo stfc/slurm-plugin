@@ -23,37 +23,55 @@ import java.util.Scanner;
  * @author Eli Chadwick
  */
 public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
-    //raw script input
+    /**
+     * Script as entered by user (i.e. without any filtering of invalid lines).
+     */
     private String rawScript;
-    //number of nodes
+
+    /**
+     * Number of nodes to reserve.
+     */
     private int nodes;
-    //number of tasks
+
+    /**
+     * Number of tasks to run.
+     */
     private int tasks;
-    //CPUs per task
+
+    /**
+     * Number of CPUs to reserve per task.
+     */
     private int cpusPerTask;
-    //expected walltime of job
+
+    /**
+     * Expected walltime required for batch job.
+     */
     private int walltime;
-    //queue selection
+
+    /**
+     * Batch system queue to use.
+     */
     private String queue;
-    //features/properties of node
+
+    /**
+     * Specific node properties required. May contain non-alphanumeric characters.
+     */
     private String features;
-    //run job in exclusive mode
+
+    /**
+     * Require exclusive use of reserved nodes.
+     */
     private boolean exclusive;
-    //email notification configuration
+
     //private NotificationConfig notificationConfig;
-    //files user wishes to recover
+
+    /**
+     * Extra files that are not recovered by default.
+     */
     private String additionalFilesToRecover;
 
     /**
-     * @param rawScript                script to be run
-     * @param nodes                    number of nodes to reserve
-     * @param tasks                    number of tasks to run
-     * @param cpusPerTask              number of CPUs to reserve per task
-     * @param walltime                 walltime required for batch job
-     * @param queue                    batch system queue to use
-     * @param features                 specific node properties required
-     * @param exclusive                require exclusive use of reserved nodes
-     * @param additionalFilesToRecover extra files that are not recovered by default
+     * Sole constructor.
      */
     public BatchBuilder(final String rawScript, final int nodes,
             final int tasks, final int cpusPerTask, final int walltime,
@@ -79,37 +97,22 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
         return rawScript;
     }
 
-    /**
-     * Get the number of nodes requested for the HPC job.
-     */
     public final int getNodes() {
         return nodes;
     }
 
-    /**
-     * Get the number of tasks requested for the HPC job.
-     */
     public final int getTasks() {
         return tasks;
     }
 
-    /**
-     * Get the number of nodes requested for the HPC job.
-     */
     public final int getCpusPerTask() {
         return cpusPerTask;
     }
 
-    /**
-     * Get the walltime requested for the HPC job.
-     */
     public final int getWalltime() {
         return walltime;
     }
 
-    /**
-     * Get the queue requested for the HPC job.
-     */
     public final String getQueue() {
         return queue;
     }
@@ -120,10 +123,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     public final String getFeatures() {
         return features;
     }
-    
-    /**
-     * Returns true if exclusive mode is requested for the HPC job.
-     */
+
     public final boolean isExclusive() {
         return exclusive;
     }
@@ -132,9 +132,6 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     //    return notificationConfig;
     //}
 
-    /**
-     * Get the string of requested files to recover.
-     */
     public final String getAdditionalFilesToRecover() {
         return additionalFilesToRecover;
     }
@@ -143,6 +140,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
      * Get the computer on which this Jenkins job is running.
      *
      * @param workspace   as provided to {@link #perform(Run, FilePath, Launcher, TaskListener)}
+     * @throws AbortException   if computer is null
      */
     public final Computer getComputer(final FilePath workspace) throws AbortException {
         Computer computer = workspace.toComputer();
@@ -156,7 +154,8 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
      * Get the node on which this Jenkins job is running.
      *
      * @param computer   the computer on which the job is running.
-     * Can be found with {@link #getComputer(FilePath)}).
+     *                   Can be found with {@link #getComputer(FilePath)}).
+     * @throws AbortException   if node is null
      */
     public final Node getNode(final Computer computer) throws AbortException {
         Node node = computer.getNode();
@@ -172,7 +171,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
      */
     public abstract void perform(Run<?, ?> run, FilePath workspace, Launcher launcher,
             TaskListener listener) throws InterruptedException, IOException;
-    
+
     /**
      * Filter unexpected HPC options, whitespace and other invalid lines from 
      * the input script.
@@ -197,14 +196,14 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     }
 
     /**
-     * Check if the script contains any content that is not removed 
+     * Check if the script contains any content that is not removed
      * by filtering (i.e. if the output of {@link #filterScript(String,String)}
      * is not empty or entirely whitespace). Returning true does not necessarily
      * mean the script is valid bash or that the script will run.
      *
      * @param script   script to check
      * @param prefix   lines beginning with this string are invalid
-     * @return true if filtered script contains non-whitespace content, 
+     * @return true if filtered script contains non-whitespace content,
      *         false otherwise (and false if the script is empty to begin with)
      */
     public final boolean isScriptValid(final String script, final String prefix) {
@@ -219,7 +218,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     }
 
     /**
-     * Check if configuration of resources requested is valid. Configuration is 
+     * Check if configuration of resources requested is valid. Configuration is
      * checked against resource limits imposed on the node, where applicable.
      * Where an input is optional and not entered by the user, set to default value.
      *
@@ -234,11 +233,11 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
                 listener.error("'Nodes' selection is not within acceptable range (1-" + config.getMaxNodesPerJob() + ")");
                 return false;
             }
-            if (tasks < 1) { //TODO - implement max tasks?
+            if (tasks < 1) {
                 listener.error("'Number of tasks' selection is not within acceptable range (must be positive)");
                 return false;
             }
-            if (cpusPerTask < 1) { //TODO - implement max CPUs per task?
+            if (cpusPerTask < 1) {
                 listener.error("'CPUs per task' selection is not within acceptable range (must be positive)");
                 return false;
             }
@@ -255,7 +254,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
             }
             if (queue == null || queue.trim().isEmpty()) {
                 queue = ""; //TODO - set a default? Warn about this? Make function for subclasses for setting default queue or throwing error?
-            } else if (config.getAvailableQueues() != null 
+            } else if (config.getAvailableQueues() != null
                     && !config.getAvailableQueues().isEmpty()) {
                 if (!config.getAvailableQueues().contains(queue)) { //TODO - make availQueues an array? Make sure full queue name fits an entry
                     listener.error("Queue is not available or does not exist");
@@ -277,10 +276,10 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
         */
         return true;
     }
-    
+
     /**
      * Create the 'system' script to send to HPC. The 'system' script runs the
-     * 'user' script, recovers the exit code and records the time taken. 
+     * 'user' script, recovers the exit code and records the time taken.
      * The format is:
      * <p>
      * <pre>
@@ -396,7 +395,8 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
      *
      * @param filesToRecover        file names to copy
      * @param recoveryDestination   destination on master to copy files to
-     * @param run                   as provided to {@link #perform(Run, FilePath, Launcher, TaskListener)}
+     * @param run                   as provided to 
+                                        {@link #perform(Run, FilePath, Launcher, TaskListener)}
      * @param workspace             as above
      * @param launcher              as above
      * @param listener              as above

@@ -12,28 +12,56 @@ import java.io.IOException;
 /**
  * @author Eli Chadwick
  */
-
 public abstract class BatchSystem {
 
     //these required for Shell
+    /**
+     * The run property cast to an {@link AbstractBuild}.
+     */
     private final AbstractBuild<?, ?> abstractBuild;
+    
+    /**
+     * The listener property cast to a {@link BuildListener}.
+     */
     private final BuildListener buildListener;
+    
+    /**
+     * The build this is part of.
+     */
     private final Run<?, ?> run;
+    
+    /**
+     * The workspace of the build.
+     */
     private final FilePath workspace;
+    
+    /**
+     * The launcher of the build.
+     */
     private final Launcher launcher;
+    
+    /**
+     * Get the listener of the build - a place to send output
+     */
     private final TaskListener listener;
-    // every file created by the batch system should have this name
+    
+    /**
+     * The name of the file used for recovering job information
+     */
     private final String communicationFile;
+
+    /**
+     * The working directory on the master.
+     */
     private final String masterWorkingDirectory;
+
+    /**
+     * The working directory on the remote.
+     */
     private final String remoteWorkingDirectory;
 
     /**
-     * @param run                 as provided to {@link BatchBuilder#perform(Run, FilePath, Launcher, TaskListener)}
-     * @param workspace           as above
-     * @param launcher            as above
-     * @param listener            as above
-     * @param communicationFile   file to write the exit code and time information
-     *                            to for later recovery
+     * Sole constructor.
      */
     public BatchSystem(final Run<?, ?> run, final FilePath workspace,
             final Launcher launcher, final TaskListener listener,
@@ -73,51 +101,31 @@ public abstract class BatchSystem {
         return buildListener;
     }
 
-    /**
-     * Get the build this is part of.
-     */
     protected final Run<?, ?> getRun() {
         return run;
     }
 
-    /**
-     * Get the workspace of the build.
-     */
     protected final FilePath getWorkspace() {
         return workspace;
     }
 
-    /**
-     * Get the launcher of the build.
-     */
     protected final Launcher getLauncher() {
         return launcher;
     }
 
-    /**
-     * Get the listener of the build - a place to send output
-     */
     protected final TaskListener getListener() {
         return listener;
     }
 
-    /**
-     * Get the name of the file used for recovering job information
-     */
+
     public final String getCommunicationFile() {
         return communicationFile;
     }
-
-    /**
-     * Get the working directory on the master.
-     */
+    
     public final String getMasterWorkingDirectory() {
         return masterWorkingDirectory;
     }
 
-    /**
-     * Get the working directory on the remote.
-     */
     public final String getRemoteWorkingDirectory() {
         return remoteWorkingDirectory;
     }
