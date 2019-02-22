@@ -3,6 +3,7 @@ package io.jenkins.plugins.slurm;
 import java.util.logging.Logger;
 
 /**
+ * A computer corresponding to the SLURMSlave node class.
  * @author Eli Chadwick
  */
 public class SLURMSlaveComputer extends BatchSlaveComputer {

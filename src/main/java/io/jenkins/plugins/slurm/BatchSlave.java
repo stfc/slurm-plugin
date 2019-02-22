@@ -18,19 +18,19 @@ import java.util.logging.Logger;
  * Subclasses of {@link BatchSlave} must define their own prefix and prefix getter,
  * as well as their own logger where necessary.
  * These agents also control the formatting of batch options input by the user.
- * Subclasses must therefore implement the 
+ * Subclasses must therefore implement the
  * {@link formatBatchOptions(int, int, int, int, String, String, boolean)} method.
  * @author Eli Chadwick
  */
 public abstract class BatchSlave extends Slave {
-    
+
     /**
      * Used for logging information.
      */
     private static final Logger LOGGER = Logger.getLogger(BatchSlave.class.getName());
-    
+
     //subclasses must define/implement their own logger and prefix
-    
+
     /**
      * Configuration of limits on HPC resource usage.
      */
@@ -38,7 +38,7 @@ public abstract class BatchSlave extends Slave {
 
     public BatchSlave(final String name, final String nodeDescription,
             final String remoteFS, final String numExecutors, final Mode mode,
-            final String labelString, final ComputerLauncher launcher, 
+            final String labelString, final ComputerLauncher launcher,
             final RetentionStrategy retentionStrategy,
             final List<? extends NodeProperty<?>> nodeProperties,
             final ResourceConfig resourceConfig)
@@ -47,7 +47,7 @@ public abstract class BatchSlave extends Slave {
                 launcher, retentionStrategy, nodeProperties);
         this.resourceConfig = resourceConfig;
     }
-    
+
     /**
      * Get the configuration of limits on HPC resource usage.
      * @return can be null
@@ -70,7 +70,7 @@ public abstract class BatchSlave extends Slave {
     /**
      * Format HPC options.
      * <p>
-     * Takes user input of resource requirements and formats for relevant 
+     * Takes user input of resource requirements and formats for relevant
      * batch system.
      *
      * @param nodes                    number of nodes to reserve
@@ -88,13 +88,13 @@ public abstract class BatchSlave extends Slave {
 
     /**
      * Reduce the time available on the node.
-     * 
+     *
      * @param time   the amount of time to reduce by (seconds)
      */
     public final void reduceAvailableSeconds(final int time) {
         resourceConfig.reduceAvailableSeconds(time);
     }
-    
+
     /**
      * Terminate the slave.
      *

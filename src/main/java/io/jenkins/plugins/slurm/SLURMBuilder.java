@@ -28,18 +28,17 @@ import java.util.ArrayList;
  * @author Eli Chadwick
  */
 public class SLURMBuilder extends BatchBuilder {
-    
+
     @DataBoundConstructor
     public SLURMBuilder(final String rawScript, final int nodes,
             final int tasks, final int cpusPerTask, final int walltime,
             final String queue, final String features, final boolean exclusive,
             //final NotificationConfig notificationConfig,
             final String additionalFilesToRecover) {
-        super(rawScript, nodes, tasks, cpusPerTask, walltime, queue, features, 
+        super(rawScript, nodes, tasks, cpusPerTask, walltime, queue, features,
                 exclusive, /*notificationConfig,*/ additionalFilesToRecover);
     }
 
-    
     /**
      * {@inheritDoc}
      */
@@ -55,7 +54,7 @@ public class SLURMBuilder extends BatchBuilder {
             throw new AbortException("Not running on a SLURM agent");
         }
         SLURMSlave slurmNode = (SLURMSlave) node;
-        
+
         //verify script and resource configuration
         if (!isScriptValid(getRawScript(), slurmNode.getPrefix())) {
             throw new AbortException("No valid script entered. Script is either empty or contains no valid content (batch options inside the script are not read).");
@@ -70,7 +69,7 @@ public class SLURMBuilder extends BatchBuilder {
                 listener, communicationFile);
         listener.getLogger().println("Remote: " + workspace.getRemote());
 
-        //generate scripts and write to remote workspace       
+        //generate scripts and write to remote workspace
         //format options
         String formattedBatchOptions = slurmNode.formatBatchOptions(
                 getNodes(), getTasks(), getCpusPerTask(), getWalltime(),
@@ -83,7 +82,7 @@ public class SLURMBuilder extends BatchBuilder {
         userScriptPath.write(userScript, "utf-8");
         //system script
         String systemScriptName = "_system_script.sh";
-        String systemScript = generateSystemScript(formattedBatchOptions, 
+        String systemScript = generateSystemScript(formattedBatchOptions,
                 userScriptName, batchSystem.getCommunicationFile());
         listener.getLogger().print(systemScriptName + ":\n" + systemScript);
         FilePath systemScriptPath = new FilePath(workspace, systemScriptName);
@@ -96,22 +95,22 @@ public class SLURMBuilder extends BatchBuilder {
         int jobID = output[0];
         int exitCode = output[1];
         int computeTimeSec = output[2];
-        
+
         //account for time used
         slurmNode.reduceAvailableSeconds(computeTimeSec);
-        
+
         //warn if job failed
         if (exitCode != 0) {
             listener.error("SLURM job did not complete successfully. Files will be recovered before this job is aborted.");
         }
-        
+
         //recover files from remote - useful to do before killing job if it's failed
         listener.getLogger().println("Recovering files from remote");
         ArrayList<String> filesToRecover = new ArrayList<String>();
         if (jobID >= 0) { //job ran successfully
             filesToRecover.add("slurm-" + jobID + "*");
         }
-        filesToRecover.add("_sbatch_output.txt"); //TODO - make sbatchOutput a property of SLURMSystem
+        filesToRecover.add("_sbatch_output.txt"); //TODO - make sbatchOutput property of SLURMSystem
         filesToRecover.add(batchSystem.getCommunicationFile()); //TODO - remove this, purely for debug
         String filesToRecoverString;
         if (getAdditionalFilesToRecover() != null && !getAdditionalFilesToRecover().isEmpty()) {
@@ -123,10 +122,10 @@ public class SLURMBuilder extends BatchBuilder {
         listener.getLogger().println("Recovery destination: " + recoveryDestination);
         recoverFiles(filesToRecoverString, recoveryDestination, run, workspace,
                 launcher, listener);
-                
+
         //clean up - important that this is done before killing the job if it's failed
         batchSystem.cleanUpFiles();
-        
+
         //kill the job if it failed
         //does not prevent any code running here but changes Jenkins job status
         if (exitCode != 0) {

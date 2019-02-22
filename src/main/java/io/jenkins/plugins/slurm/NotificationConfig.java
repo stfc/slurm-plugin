@@ -6,6 +6,8 @@ import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
+ * Stores configuration for notifying users when their HPC job starts, ends or
+ * is aborted.
  * @author Eli Chadwick
  */
 public class NotificationConfig implements Describable<NotificationConfig> {
@@ -23,15 +25,15 @@ public class NotificationConfig implements Describable<NotificationConfig> {
      * Notify user when the HPC job is aborted.
      */
     private boolean notifyAbortTicked;
-    
+
     /**
      * Usernames or email addresses to send notifications to.
      */
     private String notificationMailingList;
 
     @DataBoundConstructor
-    public NotificationConfig(final boolean notifyStartTicked, 
-            final boolean notifyEndTicked, final boolean notifyAbortTicked, 
+    public NotificationConfig(final boolean notifyStartTicked,
+            final boolean notifyEndTicked, final boolean notifyAbortTicked,
             final String notificationMailingList) {
         this.notifyStartTicked = notifyStartTicked;
         this.notifyEndTicked = notifyEndTicked;

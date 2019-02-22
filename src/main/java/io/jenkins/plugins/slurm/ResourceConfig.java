@@ -10,6 +10,7 @@ import org.kohsuke.stapler.QueryParameter;
 import java.io.Serializable;
 
 /**
+ * Stores limits on HPC resource usage for a BatchSlave.
  * @author Eli Chadwick
  */
 public class ResourceConfig implements Describable<ResourceConfig>, Serializable {
@@ -22,25 +23,25 @@ public class ResourceConfig implements Describable<ResourceConfig>, Serializable
      * The number of CPUs per node on the HPC system.
      */
     private int cpusPerNode;
-    
+
     /**
      * The maximum amount of CPU time a user can request for a job.
      * CPU time requested = tasks * CPUs per task * walltime requested.
      */
     private int maxCpuTimePerJob;
-    
+
     /**
      * The number of CPU minutes available on the HPC system.
      */
     private int availableMinutes;
-    
+
     /**
      * The number of CPU seconds available on the HPC system.
      */
     private int availableSeconds;
-    
+
     /**
-     * Queues that users are permitted to use. If left empty, user-entered 
+     * Queues that users are permitted to use. If left empty, user-entered
      * queues will not be checked for validity (though queues that do not exist
      * on the HPC system will throw errors there which will be recovered).
      */
@@ -48,7 +49,7 @@ public class ResourceConfig implements Describable<ResourceConfig>, Serializable
 
     @DataBoundConstructor
     public ResourceConfig(final int maxNodesPerJob, final int cpusPerNode,
-            final int maxCpuTimePerJob, final int availableMinutes, 
+            final int maxCpuTimePerJob, final int availableMinutes,
             final String availableQueues) {
         this.maxNodesPerJob = maxNodesPerJob;
         this.cpusPerNode = cpusPerNode;
@@ -95,14 +96,14 @@ public class ResourceConfig implements Describable<ResourceConfig>, Serializable
      * changing availableSeconds directly.
      */
     public final void verifyAvailableSeconds() {
-        if (availableSeconds < availableMinutes * 60 
+        if (availableSeconds < availableMinutes * 60
                 || availableSeconds > availableMinutes * 60 + 59) {
             //availableMinutes has changed for some reason, so update accordingly
             this.availableSeconds = availableMinutes * 60;
         }
     }
 
-    /*
+    /**
      * Reduce the time available on the HPC system.
      *
      * @param time   the number of seconds to reduce the available time by
@@ -110,7 +111,7 @@ public class ResourceConfig implements Describable<ResourceConfig>, Serializable
     public final void reduceAvailableSeconds(final int time) {
         verifyAvailableSeconds();
         this.availableSeconds -= time;
-        this.availableMinutes = (int) Math.floor((double) availableSeconds / 60.); //always round down
+        this.availableMinutes = (int) Math.floor((double) availableSeconds / 60.); //round down
         if (availableSeconds < 0 || availableMinutes < 0) { //precautionary, shouldn't go negative
             this.availableSeconds = 0;
             this.availableMinutes = 0;
@@ -160,7 +161,7 @@ public class ResourceConfig implements Describable<ResourceConfig>, Serializable
 
         public final FormValidation doCheckAvailableQueues(@QueryParameter final String value) {
             if (value.isEmpty()) {
-                return FormValidation.warning("No queues entered - queues specified in jobs running on this node will not be checked for validity");
+                return FormValidation.warning("No queues entered. Queues specified in jobs running on this node will not be checked for validity");
             } else {
                 return FormValidation.ok();
             }

@@ -5,6 +5,7 @@ import hudson.slaves.SlaveComputer;
 import java.util.logging.Logger;
 
 /**
+ * A computer corresponding to the BatchSlave node class.
  * @author Eli Chadwick
  */
 public class BatchSlaveComputer extends SlaveComputer {

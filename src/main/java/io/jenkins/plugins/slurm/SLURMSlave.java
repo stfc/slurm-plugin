@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
+ * An agent which can store limits on SLURM resource usage.
+ *
  * @author Eli Chadwick
- * An agent which can store limits on HPC resource usage.
- * Can format options for the SLURM batch system.
  */
 public class SLURMSlave extends BatchSlave {
     private static final Logger LOGGER = Logger.getLogger(SLURMSlave.class.getName());
@@ -34,7 +34,7 @@ public class SLURMSlave extends BatchSlave {
                 labelString, launcher, retentionStrategy,
                 nodeProperties, resourceConfig);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -75,9 +75,9 @@ public class SLURMSlave extends BatchSlave {
         if (exclusive) {
             buffer.append(prefix + " --exclusive \n");
         }
-        //NotificationConfig must be formatted by this class as it is not specific to any batch system
+        //NotificationConfig must be formatted by this class as it is not SLURM-specific
         /*
-        if (notificationConfig != null) { 
+        if (notificationConfig != null) {
             if (notificationConfig.isNotifyStartTicked()
                     || notificationConfig.isNotifyEndTicked()
                     || notificationConfig.isNotifyAbortTicked()) {

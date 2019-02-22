@@ -10,6 +10,9 @@ import hudson.model.TaskListener;
 import java.io.IOException;
 
 /**
+ * Provides methods for interfacing with an HPC system to submit jobs and 
+ * recover output.
+ *
  * @author Eli Chadwick
  */
 public abstract class BatchSystem {
@@ -19,34 +22,34 @@ public abstract class BatchSystem {
      * The run property cast to an {@link AbstractBuild}.
      */
     private final AbstractBuild<?, ?> abstractBuild; //required for Shell calls
-    
+
     /**
      * The listener property cast to a {@link BuildListener}.
      */
     private final BuildListener buildListener; //required for Shell calls
-    
+
     /**
      * The build this is part of.
      */
     private final Run<?, ?> run;
-    
+
     /**
      * The workspace of the build.
      */
     private final FilePath workspace;
-    
+
     /**
      * The launcher of the build.
      */
     private final Launcher launcher;
-    
+
     /**
-     * Get the listener of the build - a place to send output
+     * Get the listener of the build - a place to send output.
      */
     private final TaskListener listener;
-    
+
     /**
-     * The name of the file used for recovering job information
+     * The name of the file used for recovering job information.
      */
     private final String communicationFile;
 
@@ -121,7 +124,7 @@ public abstract class BatchSystem {
     public final String getCommunicationFile() {
         return communicationFile;
     }
-    
+
     public final String getMasterWorkingDirectory() {
         return masterWorkingDirectory;
     }
@@ -134,7 +137,7 @@ public abstract class BatchSystem {
      * Submit a job to the batch system.
      *
      * @param jobFileName   Name of script to submit (must already exist on the remote)
-     * @param walltime      Walltime requested for job (not passed to HPC 
+     * @param walltime      Walltime requested for job (not passed to HPC
      *                      submission command)
      * @return Array containing the job ID, exit code and time taken.
      * @throws InterruptedException
@@ -144,7 +147,7 @@ public abstract class BatchSystem {
             throws InterruptedException, IOException;
 
     /**
-     * Clean up files created by the Jenkins job
+     * Clean up files created by the Jenkins job.
      * @throws InterruptedException
      */
     public abstract void cleanUpFiles() throws InterruptedException;

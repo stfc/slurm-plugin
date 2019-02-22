@@ -336,11 +336,11 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     }
 
     /**
-     * Create the 'user' script to send to HPC. Contains the script content 
+     * Create the 'user' script to send to HPC. Contains the script content
      * entered by the user, with HPC options and blank space filtered out.
      *
      * @param script   script to filter and wrap
-     * @param prefix   the batch system prefix used to enter HPC options in the 
+     * @param prefix   the batch system prefix used to enter HPC options in the
      *                 script, e.g. #SBATCH
      * @return A bash script with user-entered commands but no HPC options.
      */
@@ -404,7 +404,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
      *
      * @param filesToRecover        file names to copy
      * @param recoveryDestination   destination on master to copy files to
-     * @param run                   as provided to 
+     * @param run                   as provided to
                                         {@link #perform(Run, FilePath, Launcher, TaskListener)}
      * @param workspace             as above
      * @param launcher              as above
