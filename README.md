@@ -6,6 +6,10 @@ can be used to limit the amount of compute resource that can be
 used by a single job. When run, the Jenkins job will wait for the SLURM job to finish, 
 and recover output files at the end.
 
+You must also have the (Copy To 
+Slave)[https://wiki.jenkins.io/display/JENKINS/Copy+To+Slave+Plugin] plugin 
+installed to use this plugin.
+
 This plugin was influenced by the 
 [lsf-cloud](https://github.com/LaisvydasLT/lsf-cloud) and 
 [pbs](https://github.com/biouno/pbs-plugin) plugins.
