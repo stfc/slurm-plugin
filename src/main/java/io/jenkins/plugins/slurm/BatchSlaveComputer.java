@@ -13,7 +13,7 @@ public class BatchSlaveComputer extends SlaveComputer {
     protected static final Logger LOGGER = Logger.getLogger(BatchSlaveComputer.class.getName());
 
     /**
-     * @param slave   node to spawn a computer for
+     * @param slave   agent to spawn a computer for
      */
     public BatchSlaveComputer(final BatchSlave slave) {
         super(slave);

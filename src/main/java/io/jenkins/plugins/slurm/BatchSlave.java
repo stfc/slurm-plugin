@@ -96,12 +96,12 @@ public abstract class BatchSlave extends Slave {
     }
 
     /**
-     * Terminate the slave.
+     * Terminate the agent.
      *
      * @author Laisvydas Skurevicius
      */
     public final void terminate() {
-        LOGGER.log(Level.INFO, "Terminating slave {0}", getNodeName());
+        LOGGER.log(Level.INFO, "Terminating agent {0}", getNodeName());
         try {
             Jenkins.getInstance().removeNode(this);
         } catch (IOException e) {

@@ -400,7 +400,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     }
 
     /**
-     * Copy files from remote workspace (on an SSH slave) to master.
+     * Copy files from remote workspace (on an SSH agent) to master.
      *
      * @param filesToRecover        file names to copy
      * @param recoveryDestination   destination on master to copy files to

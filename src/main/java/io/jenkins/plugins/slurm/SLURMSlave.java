@@ -48,7 +48,7 @@ public class SLURMSlave extends BatchSlave {
      */
     @Override
     public final Computer createComputer() {
-        LOGGER.info("Creating a new SLURM Slave");
+        LOGGER.info("Creating a new SLURM computer");
         return new SLURMSlaveComputer(this);
     }
 
@@ -105,7 +105,7 @@ public class SLURMSlave extends BatchSlave {
     @Extension
     public static final class DescriptorImpl extends SlaveDescriptor {
         public String getDisplayName() {
-            return "SLURM Slave";
+            return "SLURM Agent";
         }
 
         @Override
