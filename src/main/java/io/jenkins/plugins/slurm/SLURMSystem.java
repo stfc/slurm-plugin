@@ -34,7 +34,7 @@ public class SLURMSystem extends BatchSystem {
      * {@inheritDoc}
      */
     @Override
-    public int[] submitJob(final String jobFileName, final int walltime)
+    public int[] submitJob(final String jobFileName, final int cpuTime)
             throws InterruptedException, IOException {
 
         String sbatchOutputFile = "_sbatch_output.txt"; //TODO - make this a SLURMSystem property
@@ -128,7 +128,7 @@ public class SLURMSystem extends BatchSystem {
                 computeTimeSec = 0;
             } else {
                 getListener().getLogger().println("WARNING: Runtime information could not be retrieved. The job may have timed out.");
-                computeTimeSec = walltime * 60; //TODO - CPU time not walltime
+                computeTimeSec = cpuTime * 60;
             }
         }
 

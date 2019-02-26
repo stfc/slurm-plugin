@@ -70,7 +70,7 @@ public class SLURMSlave extends BatchSlave {
             buffer.append(prefix + " -p " + queue + "\n");
         }
         if (features != null && !features.isEmpty()) {
-            buffer.append(prefix + " -C " + features + "\n");
+            buffer.append(prefix + " -C \"" + features + "\"\n");
         }
         if (exclusive) {
             buffer.append(prefix + " --exclusive \n");

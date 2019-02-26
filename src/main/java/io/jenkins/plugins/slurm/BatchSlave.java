@@ -87,12 +87,15 @@ public abstract class BatchSlave extends Slave {
             //NotificationConfig notificationConfig);
 
     /**
-     * Reduce the time available on the node.
+     * Reduce the time available on the node, if limits on time have been 
+     * configured. If limits have not been configured, do nothing.
      *
      * @param time   the amount of time to reduce by (seconds)
      */
     public final void reduceAvailableSeconds(final int time) {
-        resourceConfig.reduceAvailableSeconds(time);
+        if (resourceConfig != null) {
+            resourceConfig.reduceAvailableSeconds(time);
+        }
     }
 
     /**

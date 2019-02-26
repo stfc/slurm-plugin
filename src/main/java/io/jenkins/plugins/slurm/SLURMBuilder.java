@@ -91,12 +91,13 @@ public class SLURMBuilder extends BatchBuilder {
         listener.getLogger().println("Scripts sent to remote");
 
         //run job and recover artifacts
-        int[] output = batchSystem.submitJob(systemScriptName, getWalltime());
+        int cpuTime = getTasks() * getCpusPerTask() * getWalltime();
+        int[] output = batchSystem.submitJob(systemScriptName, cpuTime);
         int jobID = output[0];
         int exitCode = output[1];
         int computeTimeSec = output[2];
 
-        //account for time used
+        //account for time used - node handles if there are no limits on time
         slurmNode.reduceAvailableSeconds(computeTimeSec);
 
         //warn if job failed

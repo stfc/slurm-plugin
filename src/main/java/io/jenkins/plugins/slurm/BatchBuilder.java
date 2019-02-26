@@ -179,7 +179,7 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
     /**
      * Filter unexpected HPC options, and whitespace and other invalid lines from 
      * the input script. 
-     * To develop: removal of 'hazardous' lines (possibly system-dependent).
+     * TODO: removal of 'hazardous' lines (possibly system-dependent).
      *
      * @param script   script to be filtered
      * @param prefix   lines beginning with this string will be filtered out
@@ -232,42 +232,28 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
      * @return true if all parts of configuration are valid, false if anything is invalid
      */
     public boolean isConfigurationValid(final BatchSlave node, final TaskListener listener) {
-        ResourceConfig config = node.getResourceConfig();
-        if (config != null) {
-            if (nodes < 1 || nodes > config.getMaxNodesPerJob()) {
-                listener.error("'Nodes' selection is not within acceptable range (1-" + config.getMaxNodesPerJob() + ")");
-                return false;
-            }
-            if (tasks < 1) {
-                listener.error("'Number of tasks' selection is not within acceptable range (must be positive)");
-                return false;
-            }
-            if (cpusPerTask < 1) {
-                listener.error("'CPUs per task' selection is not within acceptable range (must be positive)");
-                return false;
-            }
-            if (tasks * cpusPerTask > nodes * config.getCpusPerNode()) {
-                listener.error("Total CPUs requested (" + tasks + "*" + cpusPerTask + "=" + tasks * cpusPerTask + ") exceed CPUs available on " + nodes + " nodes.");
-                return false;
-            }
-            if (walltime < 1 || walltime * tasks * cpusPerTask > config.getMaxCpuTimePerJob()) {
-                listener.error("Walltime requested is too high (total CPU time requested may not exceed " + config.getMaxCpuTimePerJob() + " minutes)"); //TODO - fix this warning
-                return false;
-            } else if (config.getAvailableMinutes() - walltime * tasks * cpusPerTask < 0) {
-                listener.error("System has insufficient available CPU time for this job. Please contact your Jenkins administrator.");
-                return false;
-            }
-            if (queue == null || queue.trim().isEmpty()) {
-                queue = ""; //To develop: set a default? Warn about this? Add ResourceConfig option for setting default queue?
-            } else if (config.getAvailableQueues() != null
-                    && !config.getAvailableQueues().isEmpty()) {
-                if (!config.getAvailableQueues().contains(queue)) { //To develop: make availableQueues an array/List? Make sure full queue name fits an entry in the array
-                    listener.error("Queue is not available or does not exist");
-                    return false;
-                }
-            }
+
+        //checks that do not require a ResourceConfig to exist
+        if (nodes < 1) {
+            listener.error("'Nodes' input must be at least 1");
+            return false;
         }
-        //To develop: validation of features, if possible (maybe by subclasses)
+        if (tasks < 1) {
+            listener.error("'Number of tasks' input must be at least 1");
+            return false;
+        }
+        if (cpusPerTask < 1) {
+            listener.error("'CPUs per task' input must be at least 1");
+            return false;
+        }
+        if (walltime < 1) {
+            listener.error("'Walltime' input must be at least 1");
+            return false;
+        }
+        if (queue == null || queue.trim().isEmpty()) {
+            queue="";
+        }
+        //TODO: validation of features, if possible (maybe by subclasses)
         if (features == null || features.trim().isEmpty()) {
             features = "";
         }
@@ -280,6 +266,38 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
             return false;
         }
         */
+
+        //checks that require ResourceConfig to exist
+        ResourceConfig config = node.getResourceConfig();
+        if (config != null) {
+            if (nodes > config.getMaxNodesPerJob()) {
+                listener.error("'Nodes' selection is not within acceptable range (1-" + config.getMaxNodesPerJob() + ")");
+                return false;
+            }
+            if (tasks * cpusPerTask > nodes * config.getCpusPerNode()) {
+                listener.error("Total CPUs requested (" + tasks + "*" + cpusPerTask + "=" + tasks * cpusPerTask + ") exceed CPUs available on " + nodes + " nodes.");
+                return false;
+            }
+            if (walltime * tasks * cpusPerTask > config.getMaxCpuTimePerJob()) {
+                listener.error("Walltime requested is too high (total CPU time requested may not exceed " + config.getMaxCpuTimePerJob() + " minutes)"); //TODO - fix this warning
+                return false;
+            } else if (config.getAvailableMinutes() - walltime * tasks * cpusPerTask < 0) {
+                listener.error("System has insufficient available CPU time for this job. Please contact your Jenkins administrator.");
+                return false;
+            }
+            //duplicated check, leaves space for setting a default later if desired
+            if (queue == null || queue.trim().isEmpty()) {
+                //TODO: set a default? Warn about this? Add ResourceConfig option for setting default queue?
+                queue = "";
+            } else if (config.getAvailableQueues() != null
+                    && !config.getAvailableQueues().isEmpty()) {
+                if (!config.getAvailableQueues().contains(queue)) { //TODO: make availableQueues an array/List? Make sure full queue name fits an entry in the array
+                    listener.error("Queue is not available or does not exist");
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 
