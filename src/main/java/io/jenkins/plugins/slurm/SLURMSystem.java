@@ -41,7 +41,7 @@ public class SLURMSystem extends BatchSystem {
 
         //submit the job to SLURM
         //save stdout and exit code of sbatch to sbatchOutputFile on the remote
-        Shell shell = new Shell("#!/bin/bash +xl\n" + "cd " + getRemoteWorkingDirectory() + "\n"
+        Shell shell = new Shell("#!/bin/bash +xl\n" + "cd '" + getRemoteWorkingDirectory().replace("'", "'\\''") + "'\n"
                             + "module avail >/dev/null 2>&1\n" //rebuilds module cache
                             + "chmod 755 " + jobFileName + "\n"
                             + "sbatch " + jobFileName + " > " + sbatchOutputFile + " 2>&1\n"
@@ -146,9 +146,9 @@ public class SLURMSystem extends BatchSystem {
         getListener().getLogger().println("Cleaning up workspace");
         if (getRemoteWorkingDirectory().contains("workspace")) {
             Shell shell = new Shell("#!/bin/bash +x\n"
-                                   + "echo " + getRemoteWorkingDirectory() + "\n"
+                                   + "echo " + getRemoteWorkingDirectory().replace("'", "\\'") + "\n"
                                    + "mkdir -p /tmp/jenkins\n"
-                                   + "[ -d \"" + getRemoteWorkingDirectory() + "\" ] && mv " + getRemoteWorkingDirectory() + " /tmp/jenkins/\n"
+                                   + "[ -d '" + getRemoteWorkingDirectory().replace("'", "'\\''") + "' ] && mv '" + getRemoteWorkingDirectory().replace("'", "'\\''") + "' /tmp/jenkins/\n"
                                    + "rm -rf /tmp/jenkins\n");
             shell.perform(getAbstractBuild(), getLauncher(), getBuildListener());
         } else {
