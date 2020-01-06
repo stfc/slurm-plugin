@@ -10,10 +10,6 @@ There are a number of generalised base classes in the plugin - these may serve
 as a jumping-off point for other batch systems (with the SLURM implementation 
 as a reference).
 
-You must also have the [Copy To 
-Slave](https://wiki.jenkins.io/display/JENKINS/Copy+To+Slave+Plugin) plugin 
-installed to use this plugin.
-
 This plugin was influenced by the 
 [lsf-cloud](https://github.com/LaisvydasLT/lsf-cloud) and 
 [pbs](https://github.com/biouno/pbs-plugin) plugins.
