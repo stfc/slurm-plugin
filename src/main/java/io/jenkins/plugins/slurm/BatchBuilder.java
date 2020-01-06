@@ -292,8 +292,8 @@ public abstract class BatchBuilder extends Builder implements SimpleBuildStep {
             } else if (config.getAvailableQueues() != null
                     && !config.getAvailableQueues().isEmpty()) {
                 if (!config.getAvailableQueues().contains(queue)) { //TODO: make availableQueues an array/List? Make sure full queue name fits an entry in the array
-                    listener.error("Queue is not available or does not exist");
-                    return false;
+                    listener.error("Queue [" + queue + "] is not available or does not exist");
+                    // return false;
                 }
             }
         }

@@ -1,9 +1,11 @@
 package io.jenkins.plugins.slurm;
 
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Node;
@@ -47,6 +49,10 @@ public class SLURMBuilder extends BatchBuilder {
             final Launcher launcher, final TaskListener listener)
             throws InterruptedException, IOException {
 
+        AbstractBuild abstractBuild = AbstractBuild.class.cast(run);
+        EnvVars env = abstractBuild.getEnvironment(listener);
+        env.overrideAll(abstractBuild.getBuildVariables());
+
         //check job is running on a SLURMSlave (otherwise it won't work)
         Computer computer = getComputer(workspace);
         Node node = getNode(computer);
@@ -73,7 +79,7 @@ public class SLURMBuilder extends BatchBuilder {
         //format options
         String formattedBatchOptions = slurmNode.formatBatchOptions(
                 getNodes(), getTasks(), getCpusPerTask(), getWalltime(),
-                getQueue(), getFeatures(), isExclusive()); //, getNotificationConfig()
+                env.expand(getQueue()), env.expand(getFeatures()), isExclusive()); //, getNotificationConfig()
         //user script
         String userScriptName = "_user_script.sh";
         String userScript = generateUserScript(getRawScript(), slurmNode.getPrefix());
